@@ -1,62 +1,10 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Clock, Users, MapPin } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
-
-const restaurants = [
-  {
-    id: 1,
-    name: 'Urban Dhaba',
-    cuisine: 'Contemporary Indian',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=90&fit=crop',
-    slug: 'urban-dhaba',
-    description: 'Experience authentic Indian flavors elevated to fine dining standards. Our signature dishes blend traditional recipes with modern culinary techniques.',
-    openingHours: '11:30 AM - 11:00 PM',
-    capacity: 'Up to 60 guests',
-    address: 'Ground Floor, The Myriad Hotel',
-    highlights: [
-      'Award-winning chef',
-      'Tandoori specialties',
-      'Curated wine selection',
-      'Private dining available',
-    ],
-  },
-  {
-    id: 2,
-    name: 'Coastal Sea Food',
-    cuisine: 'Fresh Seafood',
-    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&q=90&fit=crop',
-    slug: 'coastal-seafood',
-    description: 'Dive into our exquisite seafood collection sourced daily from premium suppliers. Immerse yourself in the flavors of the ocean.',
-    openingHours: '12:00 PM - 11:30 PM',
-    capacity: 'Up to 80 guests',
-    address: '2nd Floor, The Myriad Hotel',
-    highlights: [
-      'Fresh daily catch',
-      'Chef\'s tasting menu',
-      'Beachfront ambiance',
-      'Sommelier-curated pairs',
-    ],
-  },
-  {
-    id: 3,
-    name: 'Winking Owl – The Lounge Bar',
-    cuisine: 'Craft Cocktails & Tapas',
-    image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&q=90&fit=crop',
-    slug: 'winking-owl',
-    description: 'A sophisticated lounge bar featuring signature cocktails crafted by award-winning mixologists. Perfect for evening entertainment.',
-    openingHours: '5:00 PM - 2:00 AM',
-    capacity: 'Up to 100 guests',
-    address: '3rd Floor, The Myriad Hotel',
-    highlights: [
-      'Craft cocktails',
-      'Live music evenings',
-      'Small plates menu',
-      'Rooftop terrace',
-    ],
-  },
-];
+import { restaurants } from '@/lib/restaurant-data';
 
 export default function RestaurantsPage() {
   return (
@@ -146,9 +94,12 @@ export default function RestaurantsPage() {
                       </div>
 
                       {/* Button */}
-                      <button className="w-full bg-primary text-primary-foreground px-8 py-3 rounded font-medium hover:opacity-90 transition-opacity">
+                      <Link
+                        href={`/restaurants/${restaurant.slug}`}
+                        className="block w-full bg-primary text-primary-foreground px-8 py-3 rounded font-medium hover:opacity-90 transition-opacity text-center"
+                      >
                         Book a Table
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
