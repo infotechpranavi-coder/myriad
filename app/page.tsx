@@ -16,6 +16,8 @@ export default function Home() {
           fill
           className="object-cover brightness-75"
           priority
+          quality={95}
+          sizes="100vw"
         />
         <div className="relative z-10 text-center text-white px-4">
           <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
@@ -58,6 +60,8 @@ export default function Home() {
                   alt="Hotel Interior"
                   fill
                   className="object-cover hover:scale-105 transition-smooth duration-500"
+                  quality={90}
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
             </ScrollAnimationWrapper>
@@ -75,9 +79,9 @@ export default function Home() {
           </ScrollAnimationWrapper>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Deluxe Suite', price: '$299', image: '/hero.jpg' },
-              { name: 'Premium Suite', price: '$449', image: '/hero.jpg' },
-              { name: 'Royal Suite', price: '$699', image: '/hero.jpg' },
+              { name: 'Deluxe Suite', price: '$299', image: '/rooms/deluxe.png' },
+              { name: 'Premium Suite', price: '$449', image: '/rooms/executive.png' },
+              { name: 'Royal Suite', price: '$699', image: '/rooms/superior.png' },
             ].map((room, index) => (
               <ScrollAnimationWrapper key={room.name} animation="scaleIn" delay={index * 100}>
                 <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
@@ -87,6 +91,8 @@ export default function Home() {
                       alt={room.name}
                       fill
                       className="object-cover hover:scale-105 transition-transform duration-300"
+                      quality={90}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
                   <div className="p-6">
@@ -142,18 +148,32 @@ export default function Home() {
           </ScrollAnimationWrapper>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Urban Dhaba', cuisine: 'Contemporary Indian', image: '/hero.jpg' },
-              { name: 'Coastal Sea Food', cuisine: 'Fresh Seafood', image: '/hero.jpg' },
-              { name: 'Winking Owl – The Lounge Bar', cuisine: 'Craft Cocktails & Tapas', image: '/hero.jpg' },
+              { 
+                name: 'Urban Dhaba', 
+                cuisine: 'Contemporary Indian', 
+                image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80&fit=crop' 
+              },
+              { 
+                name: 'Coastal Sea Food', 
+                cuisine: 'Fresh Seafood', 
+                image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80&fit=crop' 
+              },
+              { 
+                name: 'Winking Owl – The Lounge Bar', 
+                cuisine: 'Craft Cocktails & Tapas', 
+                image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80&fit=crop' 
+              },
             ].map((restaurant, index) => (
               <ScrollAnimationWrapper key={restaurant.name} animation="fadeUp" delay={index * 100}>
                 <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-48 overflow-hidden bg-muted">
                     <Image
-                      src={restaurant.image || "/placeholder.svg"}
-                      alt={restaurant.name}
+                      src={restaurant.image || "/placeholder.jpg"}
+                      alt={`${restaurant.name} - ${restaurant.cuisine}`}
                       fill
                       className="object-cover hover:scale-105 transition-transform duration-300"
+                      quality={95}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
                   <div className="p-6">
@@ -183,10 +203,12 @@ export default function Home() {
             <ScrollAnimationWrapper animation="slideInRight" delay={200}>
               <div className="relative h-96 rounded-lg overflow-hidden shadow-lg order-2 md:order-1">
                 <Image
-                  src="/hero.jpg"
-                  alt="Banquet Hall"
+                  src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=90&fit=crop"
+                  alt="Luxury Banquet Hall - Elegant event space for weddings, conferences, and celebrations"
                   fill
                   className="object-cover hover:scale-105 transition-smooth duration-500"
+                  quality={95}
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
             </ScrollAnimationWrapper>
