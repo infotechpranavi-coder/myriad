@@ -9,7 +9,8 @@ const restaurants = [
     id: 1,
     name: 'Urban Dhaba',
     cuisine: 'Contemporary Indian',
-    image: '/hero.jpg',
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=90&fit=crop',
+    slug: 'urban-dhaba',
     description: 'Experience authentic Indian flavors elevated to fine dining standards. Our signature dishes blend traditional recipes with modern culinary techniques.',
     openingHours: '11:30 AM - 11:00 PM',
     capacity: 'Up to 60 guests',
@@ -25,7 +26,8 @@ const restaurants = [
     id: 2,
     name: 'Coastal Sea Food',
     cuisine: 'Fresh Seafood',
-    image: '/hero.jpg',
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&q=90&fit=crop',
+    slug: 'coastal-seafood',
     description: 'Dive into our exquisite seafood collection sourced daily from premium suppliers. Immerse yourself in the flavors of the ocean.',
     openingHours: '12:00 PM - 11:30 PM',
     capacity: 'Up to 80 guests',
@@ -41,7 +43,8 @@ const restaurants = [
     id: 3,
     name: 'Winking Owl – The Lounge Bar',
     cuisine: 'Craft Cocktails & Tapas',
-    image: '/hero.jpg',
+    image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&q=90&fit=crop',
+    slug: 'winking-owl',
     description: 'A sophisticated lounge bar featuring signature cocktails crafted by award-winning mixologists. Perfect for evening entertainment.',
     openingHours: '5:00 PM - 2:00 AM',
     capacity: 'Up to 100 guests',
@@ -76,15 +79,21 @@ export default function RestaurantsPage() {
           <div className="grid gap-16">
             {restaurants.map((restaurant, index) => (
               <ScrollAnimationWrapper key={restaurant.id} animation="fadeUp" delay={index * 100}>
-                <div className="rounded-lg overflow-hidden shadow-lg border border-border transition-smooth hover:shadow-2xl hover:-translate-y-2">
+                <div 
+                  id={restaurant.slug}
+                  className="rounded-lg overflow-hidden shadow-lg border border-border transition-smooth hover:shadow-2xl hover:-translate-y-2 scroll-mt-20"
+                >
                   <div className="grid md:grid-cols-2 gap-0">
                     {/* Image */}
-                    <div className="relative h-96">
+                    <div className="relative h-96 md:h-auto">
                       <Image
                         src={restaurant.image || "/placeholder.svg"}
-                        alt={restaurant.name}
+                        alt={`${restaurant.name} - ${restaurant.cuisine}`}
                         fill
                         className="object-cover"
+                        quality={95}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        priority={index === 0}
                       />
                     </div>
 
