@@ -60,6 +60,8 @@ export default function RoomsManagementPage() {
   });
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [addons, setAddons] = useState<Array<{ name: string; price: string }>>([]);
+  const [goibiboOffers, setGoibiboOffers] = useState<Array<{ title: string; description: string }>>([]);
 
   useEffect(() => {
     fetchRooms();
@@ -201,10 +203,28 @@ export default function RoomsManagementPage() {
       basePrice: room.priceSummary?.basePrice?.toString() || room.price?.toString() || '',
       taxes: room.priceSummary?.taxes?.toString() || '',
       serviceFees: room.priceSummary?.serviceFees?.toString() || '',
-      addons: room.addons ? JSON.stringify(room.addons, null, 2) : '',
-      goibiboOffers: room.goibiboOffers ? JSON.stringify(room.goibiboOffers, null, 2) : '',
+      addons: '', // No longer used
+      goibiboOffers: '', // No longer used
     });
     setImageUrls(room.gallery || room.images || []);
+    // Convert addons to array format
+    if (room.addons && room.addons.length > 0) {
+      setAddons(room.addons.map((addon) => ({
+        name: addon.name,
+        price: addon.price.toString(),
+      })));
+    } else {
+      setAddons([]);
+    }
+    // Convert goibiboOffers to array format
+    if (room.goibiboOffers && room.goibiboOffers.length > 0) {
+      setGoibiboOffers(room.goibiboOffers.map((offer) => ({
+        title: offer.title,
+        description: offer.description,
+      })));
+    } else {
+      setGoibiboOffers([]);
+    }
     setIsDialogOpen(true);
   };
 
@@ -226,6 +246,8 @@ export default function RoomsManagementPage() {
     });
     setImageUrls([]);
     setNewImageUrl('');
+    setAddons([]);
+    setGoibiboOffers([]);
     setIsDialogOpen(true);
   };
 
@@ -240,37 +262,65 @@ export default function RoomsManagementPage() {
     setImageUrls(imageUrls.filter((_, i) => i !== index));
   };
 
+  const handleAddAddon = () => {
+    setAddons([...addons, { name: '', price: '' }]);
+  };
+
+  const handleRemoveAddon = (index: number) => {
+    setAddons(addons.filter((_, i) => i !== index));
+  };
+
+  const handleAddonChange = (index: number, field: 'name' | 'price', value: string) => {
+    const updated = [...addons];
+    updated[index] = { ...updated[index], [field]: value };
+    setAddons(updated);
+  };
+
+  const handleAddOffer = () => {
+    setGoibiboOffers([...goibiboOffers, { title: '', description: '' }]);
+  };
+
+  const handleRemoveOffer = (index: number) => {
+    setGoibiboOffers(goibiboOffers.filter((_, i) => i !== index));
+  };
+
+  const handleOfferChange = (index: number, field: 'title' | 'description', value: string) => {
+    const updated = [...goibiboOffers];
+    updated[index] = { ...updated[index], [field]: value };
+    setGoibiboOffers(updated);
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
 
+      // Convert addons array to proper format
       let addonsData = undefined;
-      if (formData.addons.trim()) {
-        try {
-          addonsData = JSON.parse(formData.addons);
-        } catch (e) {
-          toast({
-            title: 'Error',
-            description: 'Invalid JSON format for Addons',
-            variant: 'destructive',
-          });
-          setSaving(false);
-          return;
+      if (addons.length > 0) {
+        addonsData = addons
+          .filter((addon) => addon.name.trim() && addon.price.trim())
+          .map((addon) => ({
+            name: addon.name.trim(),
+            price: parseFloat(addon.price) || 0,
+            description: '',
+          }));
+        if (addonsData.length === 0) {
+          addonsData = undefined;
         }
       }
 
+      // Convert goibiboOffers array to proper format
       let goibiboOffersData = undefined;
-      if (formData.goibiboOffers.trim()) {
-        try {
-          goibiboOffersData = JSON.parse(formData.goibiboOffers);
-        } catch (e) {
-          toast({
-            title: 'Error',
-            description: 'Invalid JSON format for Goibibo Offers',
-            variant: 'destructive',
-          });
-          setSaving(false);
-          return;
+      if (goibiboOffers.length > 0) {
+        goibiboOffersData = goibiboOffers
+          .filter((offer) => offer.title.trim() && offer.description.trim())
+          .map((offer) => ({
+            title: offer.title.trim(),
+            description: offer.description.trim(),
+            discount: undefined,
+          }));
+        if (goibiboOffersData.length === 0) {
+          goibiboOffersData = undefined;
         }
       }
 
@@ -645,36 +695,137 @@ export default function RoomsManagementPage() {
 
               {/* Addons */}
               <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Addons (JSON format)
-                </label>
-                <Textarea
-                  value={formData.addons}
-                  onChange={(e) => setFormData({ ...formData, addons: e.target.value })}
-                  placeholder='[{"name": "Breakfast", "price": 500, "description": "Continental breakfast"}, {"name": "WiFi", "price": 200}]'
-                  rows={6}
-                  className="font-mono text-xs"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter addons as JSON array. Each addon should have name, price, and optional description.
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium">Addons</label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddAddon}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Addon
+                  </Button>
+                </div>
+                {addons.length === 0 ? (
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/20">
+                    <p className="text-sm text-muted-foreground">
+                      No addons added yet. Click "Add Addon" to add items.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {addons.map((addon, index) => (
+                      <div key={index} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/30">
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">
+                              Addon Name
+                            </label>
+                            <Input
+                              value={addon.name}
+                              onChange={(e) =>
+                                handleAddonChange(index, 'name', e.target.value)
+                              }
+                              placeholder="e.g., Breakfast"
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">
+                              Price
+                            </label>
+                            <Input
+                              type="number"
+                              value={addon.price}
+                              onChange={(e) =>
+                                handleAddonChange(index, 'price', e.target.value)
+                              }
+                              placeholder="e.g., 500"
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveAddon(index)}
+                          className="mt-6"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Goibibo Offers */}
               <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Goibibo Offers (JSON format)
-                </label>
-                <Textarea
-                  value={formData.goibiboOffers}
-                  onChange={(e) => setFormData({ ...formData, goibiboOffers: e.target.value })}
-                  placeholder='[{"title": "Early Bird Discount", "description": "Book 30 days in advance", "discount": "10%"}]'
-                  rows={6}
-                  className="font-mono text-xs"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter offers as JSON array. Each offer should have title, description, and optional discount.
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium">Goibibo Offers</label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddOffer}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Offer
+                  </Button>
+                </div>
+                {goibiboOffers.length === 0 ? (
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/20">
+                    <p className="text-sm text-muted-foreground">
+                      No offers added yet. Click "Add Offer" to add items.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {goibiboOffers.map((offer, index) => (
+                      <div key={index} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/30">
+                        <div className="flex-1 space-y-2">
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">
+                              Offer Title
+                            </label>
+                            <Input
+                              value={offer.title}
+                              onChange={(e) =>
+                                handleOfferChange(index, 'title', e.target.value)
+                              }
+                              placeholder="e.g., Early Bird Discount"
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">
+                              Description
+                            </label>
+                            <Input
+                              value={offer.description}
+                              onChange={(e) =>
+                                handleOfferChange(index, 'description', e.target.value)
+                              }
+                              placeholder="e.g., Book 30 days in advance"
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveOffer(index)}
+                          className="mt-6"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <Button onClick={handleSave} className="w-full" disabled={saving}>
                 {saving ? (

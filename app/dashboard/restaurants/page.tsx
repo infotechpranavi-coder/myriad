@@ -61,6 +61,7 @@ export default function RestaurantsManagementPage() {
   const [bookings, setBookings] = useState<RestaurantBooking[]>([]);
   const [viewingBooking, setViewingBooking] = useState<RestaurantBooking | null>(null);
   const [menuItems, setMenuItems] = useState<Array<{ name: string; price: string }>>([]);
+  const [mainMenuItems, setMainMenuItems] = useState<Array<{ name: string; price: string }>>([]);
 
   useEffect(() => {
     fetchRestaurants();
@@ -119,10 +120,22 @@ export default function RestaurantsManagementPage() {
       address: restaurant.address,
       location: restaurant.location || '',
       highlights: restaurant.highlights.join(', '),
-      menu: JSON.stringify(restaurant.menu, null, 2),
+      menu: '', // No longer used
       menuHighlights: '', // No longer used
     });
     setImageUrls(restaurant.gallery || []);
+    // Convert menu to array format
+    if (restaurant.menu) {
+      const items: Array<{ name: string; price: string }> = [];
+      Object.values(restaurant.menu).forEach((categoryItems) => {
+        categoryItems.forEach((item) => {
+          items.push({ name: item.name, price: item.price });
+        });
+      });
+      setMainMenuItems(items);
+    } else {
+      setMainMenuItems([]);
+    }
     // Convert menuHighlights to array format
     if (restaurant.menuHighlights) {
       const items: Array<{ name: string; price: string }> = [];
@@ -152,12 +165,13 @@ export default function RestaurantsManagementPage() {
       address: '',
       location: '',
       highlights: '',
-      menu: '{}',
+      menu: '',
       menuHighlights: '',
     });
     setImageUrls([]);
     setNewImageUrl('');
     setMenuItems([]);
+    setMainMenuItems([]);
     setIsDialogOpen(true);
   };
 
@@ -186,21 +200,34 @@ export default function RestaurantsManagementPage() {
     setMenuItems(updated);
   };
 
+  const handleAddMainMenuItem = () => {
+    setMainMenuItems([...mainMenuItems, { name: '', price: '' }]);
+  };
+
+  const handleRemoveMainMenuItem = (index: number) => {
+    setMainMenuItems(mainMenuItems.filter((_, i) => i !== index));
+  };
+
+  const handleMainMenuItemChange = (index: number, field: 'name' | 'price', value: string) => {
+    const updated = [...mainMenuItems];
+    updated[index] = { ...updated[index], [field]: value };
+    setMainMenuItems(updated);
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
       
+      // Convert main menu items array to menu format
       let menuData = {};
-      try {
-        menuData = JSON.parse(formData.menu);
-      } catch (e) {
-        toast({
-          title: 'Error',
-          description: 'Invalid JSON format for menu',
-          variant: 'destructive',
-        });
-        setSaving(false);
-        return;
+      if (mainMenuItems.length > 0) {
+        menuData = {
+          main: mainMenuItems.map((item) => ({
+            name: item.name,
+            price: item.price,
+            description: '', // Empty description as user only provides name and price
+          })),
+        };
       }
 
       // Convert menu items array to menuHighlights format
@@ -615,20 +642,71 @@ export default function RestaurantsManagementPage() {
                   )}
                 </div>
               </div>
+              {/* Menu - Dish Name and Price */}
               <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Menu (JSON format)
-                </label>
-                <Textarea
-                  value={formData.menu}
-                  onChange={(e) => setFormData({ ...formData, menu: e.target.value })}
-                  placeholder='{"appetizers": [{"name": "Dish", "price": "₹100", "description": "..."}]}'
-                  rows={8}
-                  className="font-mono text-xs"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter menu as JSON object with categories as keys
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium">Menu</label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddMainMenuItem}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Dish
+                  </Button>
+                </div>
+                {mainMenuItems.length === 0 ? (
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/20">
+                    <p className="text-sm text-muted-foreground">
+                      No dishes added yet. Click "Add Dish" to add menu items.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {mainMenuItems.map((item, index) => (
+                      <div key={index} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/30">
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">
+                              Dish Name
+                            </label>
+                            <Input
+                              value={item.name}
+                              onChange={(e) =>
+                                handleMainMenuItemChange(index, 'name', e.target.value)
+                              }
+                              placeholder="e.g., Pasta Carbonara"
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">
+                              Price
+                            </label>
+                            <Input
+                              value={item.price}
+                              onChange={(e) =>
+                                handleMainMenuItemChange(index, 'price', e.target.value)
+                              }
+                              placeholder="e.g., ₹450"
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveMainMenuItem(index)}
+                          className="mt-6"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               {/* Menu Highlights - Dish Name and Price */}
               <div>
