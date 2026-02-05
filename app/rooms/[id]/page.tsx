@@ -25,6 +25,7 @@ import {
     User,
     Calendar as CalendarIcon,
     X,
+    CheckCircle,
 } from 'lucide-react';
 
 import { Room } from '@/lib/models/room';
@@ -53,6 +54,8 @@ import {
     DialogContent,
     DialogClose,
     DialogTitle,
+    DialogHeader,
+    DialogDescription,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -102,6 +105,15 @@ export default function RoomDetailPage() {
         mobileNumber: '',
     });
     const [submitting, setSubmitting] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [bookingDetails, setBookingDetails] = useState<{
+        roomName: string;
+        checkIn: Date | undefined;
+        checkOut: Date | undefined;
+        nights: number;
+        guests: string;
+        totalAmount: number;
+    } | null>(null);
 
     useEffect(() => {
         async function fetchRoom() {
@@ -574,9 +586,14 @@ export default function RoomDetailPage() {
                                     });
 
                                     if (response.ok) {
-                                        toast({
-                                            title: 'Success',
-                                            description: 'Booking submitted successfully!',
+                                        // Store booking details before resetting form
+                                        setBookingDetails({
+                                            roomName: roomName,
+                                            checkIn: dateRange.from,
+                                            checkOut: dateRange.to,
+                                            nights: nights,
+                                            guests: '2',
+                                            totalAmount: basePrice + taxes + serviceFees,
                                         });
                                         // Reset form
                                         setGuestForm({
@@ -586,6 +603,8 @@ export default function RoomDetailPage() {
                                             email: '',
                                             mobileNumber: '',
                                         });
+                                        // Show confirmation modal
+                                        setShowConfirmation(true);
                                     } else {
                                         const error = await response.json();
                                         toast({
@@ -681,6 +700,72 @@ export default function RoomDetailPage() {
                     />
                 </div>
             </div>
+
+            {/* Booking Confirmation Modal */}
+            <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                                <CheckCircle className="w-10 h-10 text-green-600" />
+                            </div>
+                            <DialogTitle className="text-2xl font-serif">Room Booking Confirmed!</DialogTitle>
+                            <DialogDescription className="text-base">
+                                Your room booking has been submitted successfully. We will contact you shortly to confirm your reservation.
+                            </DialogDescription>
+                        </div>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                        {bookingDetails && (
+                            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                                <div className="flex justify-between">
+                                    <span className="text-sm text-muted-foreground">Room:</span>
+                                    <span className="text-sm font-semibold">{bookingDetails.roomName}</span>
+                                </div>
+                                {bookingDetails.checkIn && (
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-muted-foreground">Check-in:</span>
+                                        <span className="text-sm font-semibold">
+                                            {format(bookingDetails.checkIn, 'EEEE, MMMM d, yyyy')}
+                                        </span>
+                                    </div>
+                                )}
+                                {bookingDetails.checkOut && (
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-muted-foreground">Check-out:</span>
+                                        <span className="text-sm font-semibold">
+                                            {format(bookingDetails.checkOut, 'EEEE, MMMM d, yyyy')}
+                                        </span>
+                                    </div>
+                                )}
+                                {bookingDetails.nights > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-muted-foreground">Nights:</span>
+                                        <span className="text-sm font-semibold">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'Night' : 'Nights'}</span>
+                                    </div>
+                                )}
+                                {bookingDetails.guests && (
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-muted-foreground">Guests:</span>
+                                        <span className="text-sm font-semibold">{bookingDetails.guests} {bookingDetails.guests === '1' ? 'Guest' : 'Guests'}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between pt-2 border-t">
+                                    <span className="text-sm font-medium">Total Amount:</span>
+                                    <span className="text-lg font-bold">₹{bookingDetails.totalAmount.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        )}
+                        <Button
+                            onClick={() => setShowConfirmation(false)}
+                            className="w-full"
+                            size="lg"
+                        >
+                            Close
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }
