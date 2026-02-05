@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { format } from 'date-fns';
@@ -27,7 +27,7 @@ import {
     X,
 } from 'lucide-react';
 
-import { roomTypes } from '@/lib/room-data';
+import { Room } from '@/lib/models/room';
 import { PricingSidebar } from '@/components/PricingSidebar';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
 import {
@@ -55,6 +55,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const amenityIcons: Record<string, React.ReactNode> = {
     'Double Bed': <Sofa size={18} />,
@@ -71,7 +72,9 @@ const amenityIcons: Record<string, React.ReactNode> = {
 export default function RoomDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const room = roomTypes.find((r) => r.id === params.id);
+    const { toast } = useToast();
+    const [room, setRoom] = useState<Room | null>(null);
+    const [loading, setLoading] = useState(true);
 
     // Date state - default to tomorrow and day after
     const tomorrow = new Date();
@@ -90,9 +93,68 @@ export default function RoomDetailPage() {
     // Image preview state
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
-    if (!room) return null;
+    // Guest details form state
+    const [guestForm, setGuestForm] = useState({
+        title: 'Mr',
+        firstName: '',
+        lastName: '',
+        email: '',
+        mobileNumber: '',
+    });
+    const [submitting, setSubmitting] = useState(false);
 
-    const taxes = Math.round(room.price * 0.12);
+    useEffect(() => {
+        async function fetchRoom() {
+            try {
+                const response = await fetch(`/api/rooms/${params.id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setRoom(data);
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Failed to fetch room:', errorData.error || response.statusText);
+                    setRoom(null);
+                }
+            } catch (error) {
+                console.error('Error fetching room:', error);
+                setRoom(null);
+            } finally {
+                setLoading(false);
+            }
+        }
+        if (params.id) {
+            fetchRoom();
+        }
+    }, [params.id]);
+
+    if (loading) {
+        return (
+            <main className="min-h-screen bg-muted/20 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-muted-foreground">Loading room details...</p>
+                </div>
+            </main>
+        );
+    }
+
+    if (!room) {
+        return (
+            <main className="min-h-screen bg-muted/20 flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
+                    <Button onClick={() => router.push('/rooms')}>Back to Rooms</Button>
+                </div>
+            </main>
+        );
+    }
+
+    const basePrice = room.priceSummary?.basePrice || room.price || 0;
+    const taxes = room.priceSummary?.taxes || 0;
+    const serviceFees = room.priceSummary?.serviceFees || 0;
+    const roomImages = room.gallery || room.images || [];
+    const roomName = room.title || room.name || 'Room';
+    const addons = room.addons || [];
+    const goibiboOffers = room.goibiboOffers || [];
 
     // Calculate number of nights
     const nights = dateRange.from && dateRange.to
@@ -234,16 +296,18 @@ export default function RoomDetailPage() {
                     {/* PROPERTY INFO */}
                     <div className="bg-background rounded-lg border p-6">
                         <div className="flex gap-4">
-                            <Image
-                                src={room.images[0]}
-                                alt={room.name}
-                                width={120}
-                                height={120}
-                                className="rounded-md object-cover"
-                            />
+                            {roomImages[0] && (
+                                <Image
+                                    src={roomImages[0]}
+                                    alt={roomName}
+                                    width={120}
+                                    height={120}
+                                    className="rounded-md object-cover"
+                                />
+                            )}
 
                             <div className="flex-1">
-                                <h2 className="font-bold text-lg">{room.name}</h2>
+                                <h2 className="font-bold text-lg">{roomName}</h2>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <MapPin size={14} />
                                     Thane, Mumbai
@@ -296,7 +360,7 @@ export default function RoomDetailPage() {
 
                         <div className="border rounded-md p-4 flex justify-between">
                             <div>
-                                <p className="font-semibold">1 x {room.name}</p>
+                                <p className="font-semibold">1 x {roomName}</p>
                                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                                     <User size={14} /> 2 Adults
                                 </p>
@@ -316,44 +380,72 @@ export default function RoomDetailPage() {
                     </div>
 
                     {/* IMAGE GALLERY */}
-                    <Carousel>
-                        <CarouselContent>
-                            {room.images.map((img, i) => (
-                                <CarouselItem key={i}>
-                                    <Image
-                                        src={img}
-                                        alt={room.name}
-                                        width={900}
-                                        height={500}
-                                        className="rounded-lg object-cover"
-                                    />
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious />
-                        <CarouselNext />
-                    </Carousel>
+                    {roomImages.length > 0 && (
+                        <Carousel>
+                            <CarouselContent>
+                                {roomImages.map((img, i) => (
+                                    <CarouselItem key={i}>
+                                        {img.startsWith('/') ? (
+                                            <Image
+                                                src={img}
+                                                alt={roomName}
+                                                width={900}
+                                                height={500}
+                                                className="rounded-lg object-cover"
+                                            />
+                                        ) : (
+                                            <img
+                                                src={img}
+                                                alt={roomName}
+                                                className="w-full h-[500px] rounded-lg object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                        )}
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious />
+                            <CarouselNext />
+                        </Carousel>
+                    )}
 
                     {/* GALLERY SECTION */}
-                    <div className="bg-background border rounded-lg p-6">
-                        <h3 className="font-bold mb-4">Gallery</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {room.images.map((img, i) => (
-                                <div
-                                    key={i}
-                                    onClick={() => setSelectedImageIndex(i)}
-                                    className="relative aspect-video overflow-hidden rounded-lg group cursor-pointer"
-                                >
-                                    <Image
-                                        src={img}
-                                        alt={`${room.name} - Image ${i + 1}`}
-                                        fill
-                                        className="object-cover transition-transform duration-300 group-hover:scale-110"
-                                    />
-                                </div>
-                            ))}
+                    {roomImages.length > 0 && (
+                        <div className="bg-background border rounded-lg p-6">
+                            <h3 className="font-bold mb-4">Gallery</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {roomImages.map((img, i) => (
+                                    <div
+                                        key={i}
+                                        onClick={() => setSelectedImageIndex(i)}
+                                        className="relative aspect-video overflow-hidden rounded-lg group cursor-pointer"
+                                    >
+                                        {img.startsWith('/') ? (
+                                            <Image
+                                                src={img}
+                                                alt={`${roomName} - Image ${i + 1}`}
+                                                fill
+                                                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                            />
+                                        ) : (
+                                            <img
+                                                src={img}
+                                                alt={`${roomName} - Image ${i + 1}`}
+                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* IMAGE PREVIEW MODAL */}
                     <Dialog
@@ -363,7 +455,7 @@ export default function RoomDetailPage() {
                         <DialogContent className="max-w-7xl w-full h-[90vh] p-0 bg-black/95 border-none">
                             <DialogTitle className="sr-only">
                                 {selectedImageIndex !== null
-                                    ? `${room.name} - Image ${selectedImageIndex + 1} of ${room.images.length}`
+                                    ? `${roomName} - Image ${selectedImageIndex + 1} of ${roomImages.length}`
                                     : 'Image Preview'}
                             </DialogTitle>
                             <div className="relative w-full h-full flex items-center justify-center">
@@ -384,22 +476,34 @@ export default function RoomDetailPage() {
                                 )}
 
                                 {/* Image */}
-                                {selectedImageIndex !== null && (
+                                {selectedImageIndex !== null && roomImages[selectedImageIndex] && (
                                     <div className="relative w-full h-full flex items-center justify-center p-8">
-                                        <Image
-                                            src={room.images[selectedImageIndex]}
-                                            alt={`${room.name} - Image ${selectedImageIndex + 1}`}
-                                            width={1200}
-                                            height={800}
-                                            className="max-w-full max-h-full object-contain"
-                                            priority
-                                        />
+                                        {roomImages[selectedImageIndex].startsWith('/') ? (
+                                            <Image
+                                                src={roomImages[selectedImageIndex]}
+                                                alt={`${roomName} - Image ${selectedImageIndex + 1}`}
+                                                width={1200}
+                                                height={800}
+                                                className="max-w-full max-h-full object-contain"
+                                                priority
+                                            />
+                                        ) : (
+                                            <img
+                                                src={roomImages[selectedImageIndex]}
+                                                alt={`${roomName} - Image ${selectedImageIndex + 1}`}
+                                                className="max-w-full max-h-full object-contain"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                        )}
                                     </div>
                                 )}
 
                                 {/* Next Button */}
                                 {selectedImageIndex !== null &&
-                                    selectedImageIndex < room.images.length - 1 && (
+                                    selectedImageIndex < roomImages.length - 1 && (
                                         <button
                                             onClick={() =>
                                                 setSelectedImageIndex(selectedImageIndex + 1)
@@ -414,7 +518,7 @@ export default function RoomDetailPage() {
                                 {/* Image Counter */}
                                 {selectedImageIndex !== null && (
                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
-                                        {selectedImageIndex + 1} / {room.images.length}
+                                        {selectedImageIndex + 1} / {roomImages.length}
                                     </div>
                                 )}
                             </div>
@@ -441,32 +545,139 @@ export default function RoomDetailPage() {
                     <div className="bg-background border rounded-lg p-6">
                         <h3 className="font-bold mb-4">Guest Details</h3>
 
-                        <div className="grid grid-cols-3 gap-4 mb-4">
-                            <Select defaultValue="Mr">
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Mr">Mr</SelectItem>
-                                    <SelectItem value="Ms">Ms</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <form
+                            onSubmit={async (e) => {
+                                e.preventDefault();
+                                try {
+                                    setSubmitting(true);
+                                    const bookingData = {
+                                        roomId: room?.id || params.id,
+                                        roomName: roomName,
+                                        title: guestForm.title,
+                                        firstName: guestForm.firstName,
+                                        lastName: guestForm.lastName,
+                                        email: guestForm.email,
+                                        mobileNumber: guestForm.mobileNumber,
+                                        checkIn: dateRange.from,
+                                        checkOut: dateRange.to,
+                                        guests: '2',
+                                        nights: nights,
+                                        totalAmount: basePrice + taxes + serviceFees,
+                                    };
 
-                            <Input placeholder="First Name" />
-                            <Input placeholder="Last Name" />
-                        </div>
+                                    const response = await fetch('/api/bookings', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify(bookingData),
+                                    });
 
-                        <Input placeholder="Email Address" className="mb-4" />
-                        <Input placeholder="Mobile Number" />
+                                    if (response.ok) {
+                                        toast({
+                                            title: 'Success',
+                                            description: 'Booking submitted successfully!',
+                                        });
+                                        // Reset form
+                                        setGuestForm({
+                                            title: 'Mr',
+                                            firstName: '',
+                                            lastName: '',
+                                            email: '',
+                                            mobileNumber: '',
+                                        });
+                                    } else {
+                                        const error = await response.json();
+                                        toast({
+                                            title: 'Error',
+                                            description: error.error || 'Failed to submit booking',
+                                            variant: 'destructive',
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error('Error submitting booking:', error);
+                                    toast({
+                                        title: 'Error',
+                                        description: 'Failed to submit booking',
+                                        variant: 'destructive',
+                                    });
+                                } finally {
+                                    setSubmitting(false);
+                                }
+                            }}
+                        >
+                            <div className="grid grid-cols-3 gap-4 mb-4">
+                                <Select
+                                    value={guestForm.title}
+                                    onValueChange={(value) =>
+                                        setGuestForm({ ...guestForm, title: value })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Mr">Mr</SelectItem>
+                                        <SelectItem value="Ms">Ms</SelectItem>
+                                        <SelectItem value="Mrs">Mrs</SelectItem>
+                                        <SelectItem value="Dr">Dr</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                <Input
+                                    placeholder="First Name"
+                                    value={guestForm.firstName}
+                                    onChange={(e) =>
+                                        setGuestForm({ ...guestForm, firstName: e.target.value })
+                                    }
+                                    required
+                                />
+                                <Input
+                                    placeholder="Last Name"
+                                    value={guestForm.lastName}
+                                    onChange={(e) =>
+                                        setGuestForm({ ...guestForm, lastName: e.target.value })
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <Input
+                                type="email"
+                                placeholder="Email Address"
+                                className="mb-4"
+                                value={guestForm.email}
+                                onChange={(e) =>
+                                    setGuestForm({ ...guestForm, email: e.target.value })
+                                }
+                                required
+                            />
+                            <Input
+                                type="tel"
+                                placeholder="Mobile Number"
+                                className="mb-4"
+                                value={guestForm.mobileNumber}
+                                onChange={(e) =>
+                                    setGuestForm({ ...guestForm, mobileNumber: e.target.value })
+                                }
+                                required
+                            />
+                            <Button type="submit" className="w-full" disabled={submitting}>
+                                {submitting ? 'Submitting...' : 'Submit Booking'}
+                            </Button>
+                        </form>
                     </div>
                 </div>
 
                 {/* RIGHT COLUMN – STICKY PRICE SUMMARY */}
                 <div className="sticky top-24 h-fit">
                     <PricingSidebar
-                        roomName={room.name}
-                        price={room.price}
+                        roomName={roomName}
+                        price={basePrice}
                         taxes={taxes}
+                        serviceFees={serviceFees}
+                        addons={addons}
+                        goibiboOffers={goibiboOffers}
                     />
                 </div>
             </div>

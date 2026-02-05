@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import {
@@ -38,60 +39,64 @@ export default function Header() {
   ];
 
   return (
-    <header className={`sticky top-0 z-50 bg-background border-b border-border transition-smooth ${hasScrolled ? 'shadow-md' : ''}`}>
+    <header className={`sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-2 border-primary/20 transition-all duration-300 ${hasScrolled ? 'shadow-lg shadow-primary/5' : 'shadow-sm'}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-18 md:h-20 py-2">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-serif font-bold text-primary hover:opacity-80 transition-smooth">
-            The Myriad
+          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity duration-300">
+            <Image
+              src="/The Myriad Hotel.png"
+              alt="The Myriad Hotel"
+              width={200}
+              height={70}
+              className="h-12 md:h-14 w-auto object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-1">
             {navItems.map((item, index) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative text-foreground font-medium group"
-                style={{
-                  animation: `slideInDown 0.5s ease-in-out ${0.1 * (index + 1)}s both`,
-                }}
+                className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group transition-all duration-300"
               >
-                {item.label}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-smooth" />
+                <span className="relative z-10">{item.label}</span>
+                <span className="absolute inset-0 bg-primary/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-3/4 transition-all duration-300" />
               </Link>
             ))}
             
             {/* Restaurants Dropdown */}
             <DropdownMenu onOpenChange={setIsRestaurantMenuOpen}>
               <DropdownMenuTrigger
-                className="relative text-foreground font-medium group flex items-center gap-1 outline-none"
-                style={{
-                  animation: `slideInDown 0.5s ease-in-out ${0.1 * (navItems.length + 1)}s both`,
-                }}
+                className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group flex items-center gap-1 outline-none transition-all duration-300"
               >
-                Restaurants
+                <span className="relative z-10">Restaurants</span>
                 <ChevronDown 
-                  size={16} 
-                  className={`transition-transform duration-200 ${isRestaurantMenuOpen ? 'rotate-180' : ''}`} 
+                  size={14} 
+                  className={`relative z-10 transition-transform duration-300 ${isRestaurantMenuOpen ? 'rotate-180' : ''}`} 
                 />
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-smooth" />
+                <span className="absolute inset-0 bg-primary/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-3/4 transition-all duration-300" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="min-w-[200px]">
+              <DropdownMenuContent align="start" className="min-w-[220px] mt-2 border-2 border-primary/20 shadow-xl bg-background/95 backdrop-blur-sm">
                 {restaurantOptions.map((restaurant) => (
                   <DropdownMenuItem key={restaurant.href} asChild>
                     <Link
                       href={restaurant.href}
-                      className="cursor-pointer"
+                      className="cursor-pointer font-serif text-sm py-2.5 px-4 hover:bg-primary/5 transition-colors duration-200"
                     >
                       {restaurant.name}
                     </Link>
                   </DropdownMenuItem>
                 ))}
+                <div className="border-t border-primary/10 my-1" />
                 <DropdownMenuItem asChild>
                   <Link
                     href="/restaurants"
-                    className="cursor-pointer font-semibold text-primary"
+                    className="cursor-pointer font-serif font-semibold text-primary py-2.5 px-4 hover:bg-primary/5 transition-colors duration-200"
                   >
                     View All →
                   </Link>
@@ -101,15 +106,15 @@ export default function Header() {
           </div>
 
           {/* Booking Button and Mobile Menu Toggle */}
-          <div className="flex items-center gap-4">
-            <button className="hidden sm:inline-block bg-primary text-primary-foreground px-6 py-2 rounded font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95">
+          <div className="flex items-center gap-3">
+            <button className="hidden sm:inline-block bg-primary text-primary-foreground px-8 py-2.5 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg hover:bg-primary/95 transition-all duration-300">
               Book Now
             </button>
             
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2"
+              className="md:hidden p-2 text-foreground/90 hover:text-foreground transition-colors"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -119,16 +124,13 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden pb-4 space-y-2 animate-fade-up">
+          <div className="md:hidden pb-6 pt-4 space-y-1 border-t border-primary/10 animate-fade-up">
             {navItems.map((item, index) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="block px-4 py-2 text-foreground hover:bg-muted rounded transition-smooth"
+                className="block px-4 py-3 text-foreground/90 font-serif text-sm uppercase tracking-wider hover:bg-primary/5 hover:text-primary transition-all duration-200 border-l-2 border-transparent hover:border-primary"
                 onClick={() => setIsMenuOpen(false)}
-                style={{
-                  animation: `fadeUp 0.3s ease-in-out ${0.05 * (index + 1)}s both`,
-                }}
               >
                 {item.label}
               </Link>
@@ -138,21 +140,21 @@ export default function Header() {
             <div className="px-4">
               <button
                 onClick={() => setIsRestaurantMenuOpen(!isRestaurantMenuOpen)}
-                className="w-full flex items-center justify-between px-4 py-2 text-foreground hover:bg-muted rounded transition-smooth"
+                className="w-full flex items-center justify-between px-4 py-3 text-foreground/90 font-serif text-sm uppercase tracking-wider hover:bg-primary/5 hover:text-primary transition-all duration-200 border-l-2 border-transparent hover:border-primary"
               >
                 Restaurants
                 <ChevronDown 
                   size={16} 
-                  className={`transition-transform duration-200 ${isRestaurantMenuOpen ? 'rotate-180' : ''}`} 
+                  className={`transition-transform duration-300 ${isRestaurantMenuOpen ? 'rotate-180' : ''}`} 
                 />
               </button>
               {isRestaurantMenuOpen && (
-                <div className="ml-4 mt-2 space-y-1 animate-fade-up">
+                <div className="ml-6 mt-2 space-y-1 border-l-2 border-primary/20 pl-4">
                   {restaurantOptions.map((restaurant) => (
                     <Link
                       key={restaurant.href}
                       href={restaurant.href}
-                      className="block px-4 py-2 text-foreground/80 hover:bg-muted rounded transition-smooth text-sm"
+                      className="block px-4 py-2 text-foreground/70 hover:text-primary hover:bg-primary/5 rounded transition-all duration-200 text-sm font-serif"
                       onClick={() => {
                         setIsMenuOpen(false);
                         setIsRestaurantMenuOpen(false);
@@ -161,9 +163,10 @@ export default function Header() {
                       {restaurant.name}
                     </Link>
                   ))}
+                  <div className="border-t border-primary/10 my-2" />
                   <Link
                     href="/restaurants"
-                    className="block px-4 py-2 text-primary font-semibold hover:bg-muted rounded transition-smooth text-sm"
+                    className="block px-4 py-2 text-primary font-serif font-semibold hover:bg-primary/5 rounded transition-all duration-200 text-sm"
                     onClick={() => {
                       setIsMenuOpen(false);
                       setIsRestaurantMenuOpen(false);
@@ -175,9 +178,11 @@ export default function Header() {
               )}
             </div>
             
-            <button className="w-full mt-4 bg-primary text-primary-foreground px-6 py-2 rounded font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95">
-              Book Now
-            </button>
+            <div className="pt-4 border-t border-primary/10 mt-4">
+              <button className="w-full bg-primary text-primary-foreground px-8 py-3 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg transition-all duration-300">
+                Book Now
+              </button>
+            </div>
           </div>
         )}
       </nav>

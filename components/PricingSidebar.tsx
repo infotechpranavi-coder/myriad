@@ -6,11 +6,23 @@ import { ChevronDown, Gift, CheckCircle } from 'lucide-react'
 interface PricingSidebarProps {
     roomName: string
     price: number
-    taxes: number
+    taxes?: number
+    serviceFees?: number
+    addons?: Array<{
+        name: string
+        price: number
+        description?: string
+    }>
+    goibiboOffers?: Array<{
+        title: string
+        description: string
+        discount?: string
+    }>
 }
 
-export function PricingSidebar({ roomName, price, taxes }: PricingSidebarProps) {
-    const total = price + taxes;
+export function PricingSidebar({ roomName, price, taxes = 0, serviceFees = 0, addons = [], goibiboOffers = [] }: PricingSidebarProps) {
+    const totalTaxesAndFees = taxes + serviceFees;
+    const total = price + totalTaxesAndFees;
 
     return (
         <div className="sticky top-24 space-y-4">
@@ -32,7 +44,7 @@ export function PricingSidebar({ roomName, price, taxes }: PricingSidebarProps) 
                                     Price + Taxes & Service Fees
                                 </span>
                                 <span className="text-lg font-bold text-foreground">
-                                    ₹{price.toLocaleString()} + ₹{taxes}
+                                    ₹{price.toLocaleString()} + ₹{totalTaxesAndFees.toLocaleString()}
                                 </span>
                             </div>
                             <p className="text-xs text-foreground/50">(1 Room x 1 Night)</p>
@@ -66,19 +78,40 @@ export function PricingSidebar({ roomName, price, taxes }: PricingSidebarProps) 
                     <p className="text-sm text-foreground/60 mb-6">Price inclusive of taxes and for all guests</p>
 
                     <div className="space-y-4">
-                        <div className="border border-border rounded-sm p-4">
-                            <div className="flex items-start justify-between mb-2">
-                                <div>
-                                    <p className="text-sm font-semibold text-foreground mb-1">
-                                        Add <span className="font-bold">Breakfast</span> for ₹1061 for all guests
-                                    </p>
-                                    <p className="text-xs text-foreground/50">Includes taxes and fees</p>
+                        {addons.length > 0 ? (
+                            addons.map((addon, index) => (
+                                <div key={index} className="border border-border rounded-sm p-4">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div>
+                                            <p className="text-sm font-semibold text-foreground mb-1">
+                                                Add <span className="font-bold">{addon.name}</span> for ₹{addon.price.toLocaleString()} for all guests
+                                            </p>
+                                            {addon.description && (
+                                                <p className="text-xs text-foreground/50">{addon.description}</p>
+                                            )}
+                                            <p className="text-xs text-foreground/50 mt-1">Includes taxes and fees</p>
+                                        </div>
+                                        <button className="text-sm font-bold text-primary hover:underline shrink-0 ml-4">
+                                            APPLY
+                                        </button>
+                                    </div>
                                 </div>
-                                <button className="text-sm font-bold text-primary hover:underline shrink-0 ml-4">
-                                    APPLY
-                                </button>
+                            ))
+                        ) : (
+                            <div className="border border-border rounded-sm p-4">
+                                <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                        <p className="text-sm font-semibold text-foreground mb-1">
+                                            Add <span className="font-bold">Breakfast</span> for ₹1061 for all guests
+                                        </p>
+                                        <p className="text-xs text-foreground/50">Includes taxes and fees</p>
+                                    </div>
+                                    <button className="text-sm font-bold text-primary hover:underline shrink-0 ml-4">
+                                        APPLY
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="bg-muted/30 border border-border rounded-sm p-4">
                             <div className="flex items-start justify-between mb-2">
@@ -98,28 +131,36 @@ export function PricingSidebar({ roomName, price, taxes }: PricingSidebarProps) 
             </div>
 
             {/* Goibibo Offers */}
-            <div className="bg-background rounded-sm border border-border shadow-sm overflow-hidden">
-                <div className="p-6">
-                    <h3 className="text-xl font-bold text-foreground mb-4">Goibibo Offers</h3>
+            {goibiboOffers.length > 0 && (
+                <div className="bg-background rounded-sm border border-border shadow-sm overflow-hidden">
+                    <div className="p-6">
+                        <h3 className="text-xl font-bold text-foreground mb-4">Goibibo Offers</h3>
 
-                    <div className="bg-primary/5 border border-primary/20 rounded-sm p-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle size={24} className="text-green-600 fill-green-600" />
-                                <div>
-                                    <p className="text-base font-bold text-green-700">GOSMARTDEAL</p>
-                                    <p className="text-xs text-foreground/60 mt-0.5">
-                                        Use GOSMARTDEAL to unlock exclusive pricing on this hotel
-                                    </p>
+                        <div className="space-y-3">
+                            {goibiboOffers.map((offer, index) => (
+                                <div key={index} className="bg-primary/5 border border-primary/20 rounded-sm p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <CheckCircle size={24} className="text-green-600 fill-green-600" />
+                                            <div>
+                                                <p className="text-base font-bold text-green-700">{offer.title}</p>
+                                                <p className="text-xs text-foreground/60 mt-0.5">
+                                                    {offer.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {offer.discount && (
+                                            <span className="text-lg font-bold text-green-700 shrink-0 ml-4">
+                                                {offer.discount}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                            <span className="text-lg font-bold text-green-700 shrink-0 ml-4">
-                                ₹1,270
-                            </span>
+                            ))}
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

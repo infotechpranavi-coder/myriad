@@ -6,7 +6,9 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "seed:rooms": "tsx scripts/seed-rooms.ts",
+    "seed:restaurants": "tsx scripts/seed-restaurants.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -43,11 +45,13 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
+    "dotenv": "^17.2.3",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
     "lenis": "^1.3.17",
     "lucide-react": "^0.454.0",
+    "mongodb": "^7.1.0",
     "next": "16.0.10",
     "next-themes": "^0.4.6",
     "react": "19.2.0",
@@ -69,6 +73,7 @@
     "@types/react-dom": "^19",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
+    "tsx": "^4.21.0",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
   }

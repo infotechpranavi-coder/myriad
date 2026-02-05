@@ -1,12 +1,45 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, Users, MapPin } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
-import { restaurants } from '@/lib/restaurant-data';
+import { Restaurant } from '@/lib/models/restaurant';
 
 export default function RestaurantsPage() {
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRestaurants() {
+      try {
+        const response = await fetch('/api/restaurants');
+        if (response.ok) {
+          const data = await response.json();
+          setRestaurants(data);
+        } else {
+          console.error('Failed to fetch restaurants');
+        }
+      } catch (error) {
+        console.error('Error fetching restaurants:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRestaurants();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading restaurants...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="bg-background">
       {/* Header */}
@@ -47,6 +80,39 @@ export default function RestaurantsPage() {
 
                     {/* Content */}
                     <div className="bg-card p-8">
+                      {restaurant.slug === 'urban-dhaba' && (
+                        <div className="mb-6 flex justify-center">
+                          <Image
+                            src="/Urban Dhaba.png"
+                            alt="Urban Dhaba Logo"
+                            width={200}
+                            height={80}
+                            className="h-16 w-auto object-contain"
+                          />
+                        </div>
+                      )}
+                      {restaurant.slug === 'winking-owl' && (
+                        <div className="mb-6 flex justify-center">
+                          <Image
+                            src="/Winkingg Owl.png"
+                            alt="Winkingg Owl Logo"
+                            width={200}
+                            height={80}
+                            className="h-16 w-auto object-contain"
+                          />
+                        </div>
+                      )}
+                      {restaurant.slug === 'coastal-seafood' && (
+                        <div className="mb-6 flex justify-center">
+                          <Image
+                            src="/Coastal Sea Food.png"
+                            alt="Coastal Sea Food Logo"
+                            width={200}
+                            height={80}
+                            className="h-16 w-auto object-contain"
+                          />
+                        </div>
+                      )}
                       <h2 className="text-3xl font-serif font-bold text-primary mb-1">
                         {restaurant.name}
                       </h2>

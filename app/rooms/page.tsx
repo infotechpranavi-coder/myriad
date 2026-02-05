@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import { Star, Wifi, Coffee, Tv, Wind, Sofa, Shield, CheckCircle2, MapPin, Clock, CreditCard, Zap, Waves } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
-import { roomTypes } from '@/lib/room-data';
+import { Room } from '@/lib/models/room';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const amenityIcons = {
   'Double Bed': <Sofa size={20} />,
@@ -23,6 +24,28 @@ const amenityIcons = {
 import { RoomHero } from '@/components/RoomHero';
 
 export default function RoomsPage() {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const response = await fetch('/api/rooms');
+        if (response.ok) {
+          const data = await response.json();
+          setRooms(data);
+        } else {
+          console.error('Failed to fetch rooms');
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRooms();
+  }, []);
+
   const generalAmenities = [
     { name: 'Free WiFi', icon: <Wifi size={24} /> },
     { name: '24/7 Security', icon: <Shield size={24} /> },
@@ -32,6 +55,16 @@ export default function RoomsPage() {
     { name: 'Parking', icon: <MapPin size={24} /> },
   ];
 
+  if (loading) {
+    return (
+      <main className="bg-background min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading rooms...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="bg-background">
       {/* Hero Slider */}
@@ -39,7 +72,7 @@ export default function RoomsPage() {
 
       {/* Rooms Sections */}
       <section className="bg-background">
-        {roomTypes.map((room, index) => (
+        {rooms.map((room, index) => (
           <div key={room.id} id={`room-${room.id}`} className={`${index % 2 === 1 ? 'bg-muted/10' : ''} py-28 px-4`}>
             <div className="max-w-7xl mx-auto">
               <ScrollAnimationWrapper animation="fadeUp">

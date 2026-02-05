@@ -3,9 +3,9 @@
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-import { Clock, Users, MapPin, ChevronLeft, Star } from 'lucide-react';
-import { restaurants } from '@/lib/restaurant-data';
+import { useState, useEffect } from 'react';
+import { Clock, Users, MapPin, ChevronLeft, Star, X, ChevronRight, CheckCircle } from 'lucide-react';
+import { Restaurant } from '@/lib/models/restaurant';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,11 +15,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function RestaurantDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const restaurant = restaurants.find((r) => r.slug === params.slug);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRestaurant() {
+      try {
+        const response = await fetch(`/api/restaurants/${params.slug}`);
+        if (response.ok) {
+          const data = await response.json();
+          setRestaurant(data);
+        } else {
+          console.error('Failed to fetch restaurant');
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (params.slug) {
+      fetchRestaurant();
+    }
+  }, [params.slug]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -30,6 +61,45 @@ export default function RestaurantDetailPage() {
     guests: '2',
     specialRequests: '',
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<{
+    restaurantName: string;
+    date: string;
+    time: string;
+    guests: string;
+  } | null>(null);
+  const { toast } = useToast();
+
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+
+  // Gallery images for Urban Dhaba
+  const getGalleryImages = () => {
+    if (!restaurant) return [];
+    if (restaurant.slug === 'urban-dhaba') {
+      return [
+        restaurant.image,
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=90&fit=crop',
+        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=90&fit=crop',
+        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=90&fit=crop',
+        'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=1200&q=90&fit=crop',
+        'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&q=90&fit=crop',
+      ];
+    }
+    return [restaurant.image];
+  };
+
+  const galleryImages = getGalleryImages();
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading restaurant...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!restaurant) {
     return (
@@ -44,10 +114,69 @@ export default function RestaurantDetailPage() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    alert('Table booking request submitted! We will contact you shortly.');
+    if (!restaurant) return;
+
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/restaurant-bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          restaurantId: restaurant.id.toString(),
+          restaurantName: restaurant.name,
+          restaurantSlug: restaurant.slug,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          date: formData.date,
+          time: formData.time,
+          guests: formData.guests,
+          specialRequests: formData.specialRequests || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        // Store booking details before resetting form
+        setBookingDetails({
+          restaurantName: restaurant.name,
+          date: formData.date,
+          time: formData.time,
+          guests: formData.guests,
+        });
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          date: '',
+          time: '',
+          guests: '2',
+          specialRequests: '',
+        });
+        // Show confirmation modal
+        setShowConfirmation(true);
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.error || 'Failed to submit booking request',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting booking:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to submit booking request',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -61,9 +190,38 @@ export default function RestaurantDetailPage() {
           >
             <ChevronLeft size={20} />
           </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold">{restaurant.name}</h1>
-            <p className="text-xs text-muted-foreground">{restaurant.cuisine}</p>
+          <div className="flex-1 flex items-center gap-4">
+            {restaurant.slug === 'urban-dhaba' && (
+              <Image
+                src="/Urban Dhaba.png"
+                alt="Urban Dhaba Logo"
+                width={150}
+                height={60}
+                className="h-10 w-auto object-contain"
+              />
+            )}
+            {restaurant.slug === 'winking-owl' && (
+              <Image
+                src="/Winkingg Owl.png"
+                alt="Winkingg Owl Logo"
+                width={150}
+                height={60}
+                className="h-10 w-auto object-contain"
+              />
+            )}
+            {restaurant.slug === 'coastal-seafood' && (
+              <Image
+                src="/Coastal Sea Food.png"
+                alt="Coastal Sea Food Logo"
+                width={150}
+                height={60}
+                className="h-10 w-auto object-contain"
+              />
+            )}
+            <div>
+              <h1 className="text-lg font-bold">{restaurant.name}</h1>
+              <p className="text-xs text-muted-foreground">{restaurant.cuisine}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -80,8 +238,45 @@ export default function RestaurantDetailPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-8 left-8 right-8 text-white">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-2">{restaurant.name}</h1>
-          <p className="text-xl">{restaurant.cuisine}</p>
+          {restaurant.slug === 'urban-dhaba' ? (
+            <div className="mb-4">
+              <Image
+                src="/Urban Dhaba.png"
+                alt="Urban Dhaba Logo"
+                width={300}
+                height={120}
+                className="h-20 md:h-24 w-auto object-contain mb-3"
+              />
+              <p className="text-xl text-white/90">{restaurant.cuisine}</p>
+            </div>
+          ) : restaurant.slug === 'winking-owl' ? (
+            <div className="mb-4">
+              <Image
+                src="/Winkingg Owl.png"
+                alt="Winkingg Owl Logo"
+                width={300}
+                height={120}
+                className="h-20 md:h-24 w-auto object-contain mb-3"
+              />
+              <p className="text-xl text-white/90">{restaurant.cuisine}</p>
+            </div>
+          ) : restaurant.slug === 'coastal-seafood' ? (
+            <div className="mb-4">
+              <Image
+                src="/Coastal Sea Food.png"
+                alt="Coastal Sea Food Logo"
+                width={300}
+                height={120}
+                className="h-20 md:h-24 w-auto object-contain mb-3"
+              />
+              <p className="text-xl text-white/90">{restaurant.cuisine}</p>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-4xl md:text-5xl font-serif font-bold mb-2">{restaurant.name}</h1>
+              <p className="text-xl">{restaurant.cuisine}</p>
+            </>
+          )}
         </div>
       </div>
 
@@ -267,8 +462,8 @@ export default function RestaurantDetailPage() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
-                  Submit Booking Request
+                <Button type="submit" className="w-full" size="lg" disabled={submitting}>
+                  {submitting ? 'Submitting...' : 'Submit Booking Request'}
                 </Button>
 
                 <p className="text-xs text-foreground/60 text-center">
@@ -279,6 +474,157 @@ export default function RestaurantDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Gallery Section - Only for Urban Dhaba */}
+      {restaurant.slug === 'urban-dhaba' && (
+        <section className="bg-muted/30 py-16 px-4">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-8 text-center">
+              Gallery
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {galleryImages.map((img, index) => (
+                <div
+                  key={index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  className="relative aspect-square overflow-hidden rounded-lg group cursor-pointer border-2 border-transparent hover:border-primary transition-all duration-300"
+                >
+                  <Image
+                    src={img}
+                    alt={`${restaurant.name} - Image ${index + 1}`}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Image Preview Modal */}
+      <Dialog
+        open={selectedImageIndex !== null}
+        onOpenChange={(open) => !open && setSelectedImageIndex(null)}
+      >
+        <DialogContent className="max-w-7xl w-full h-[90vh] p-0 bg-black/95 border-none">
+          <DialogTitle className="sr-only">
+            {selectedImageIndex !== null
+              ? `${restaurant.name} - Image ${selectedImageIndex + 1} of ${galleryImages.length}`
+              : 'Image Preview'}
+          </DialogTitle>
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Close Button */}
+            <DialogClose className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 rounded-full p-2 transition-colors">
+              <X size={24} />
+            </DialogClose>
+
+            {/* Previous Button */}
+            {selectedImageIndex !== null && selectedImageIndex > 0 && (
+              <button
+                onClick={() => setSelectedImageIndex(selectedImageIndex - 1)}
+                className="absolute left-4 z-50 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={32} />
+              </button>
+            )}
+
+            {/* Image */}
+            {selectedImageIndex !== null && (
+              <div className="relative w-full h-full flex items-center justify-center p-8">
+                <Image
+                  src={galleryImages[selectedImageIndex]}
+                  alt={`${restaurant.name} - Image ${selectedImageIndex + 1}`}
+                  width={1200}
+                  height={800}
+                  className="max-w-full max-h-full object-contain"
+                  priority
+                />
+              </div>
+            )}
+
+            {/* Next Button */}
+            {selectedImageIndex !== null &&
+              selectedImageIndex < galleryImages.length - 1 && (
+                <button
+                  onClick={() => setSelectedImageIndex(selectedImageIndex + 1)}
+                  className="absolute right-4 z-50 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={32} />
+                </button>
+              )}
+
+            {/* Image Counter */}
+            {selectedImageIndex !== null && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+                {selectedImageIndex + 1} / {galleryImages.length}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Booking Confirmation Modal */}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <DialogTitle className="text-2xl font-serif">Table Booking Confirmed!</DialogTitle>
+              <DialogDescription className="text-base">
+                Your table booking request has been submitted successfully. We will contact you shortly to confirm your reservation.
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            {bookingDetails && (
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Restaurant:</span>
+                  <span className="text-sm font-semibold">{bookingDetails.restaurantName}</span>
+                </div>
+                {bookingDetails.date && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Date:</span>
+                    <span className="text-sm font-semibold">
+                      {new Date(bookingDetails.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                )}
+                {bookingDetails.time && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Time:</span>
+                    <span className="text-sm font-semibold">{bookingDetails.time}</span>
+                  </div>
+                )}
+                {bookingDetails.guests && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Guests:</span>
+                    <span className="text-sm font-semibold">{bookingDetails.guests} {bookingDetails.guests === '1' ? 'Guest' : 'Guests'}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            <Button
+              onClick={() => setShowConfirmation(false)}
+              className="w-full"
+              size="lg"
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
