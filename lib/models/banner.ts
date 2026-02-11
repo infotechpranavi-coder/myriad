@@ -7,6 +7,7 @@ export interface Banner {
   buttonText?: string;
   isActive: boolean;
   order: number;
+  page?: 'home' | 'about';
   createdAt?: Date;
   updatedAt?: Date;
 }

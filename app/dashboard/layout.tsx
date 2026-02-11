@@ -1,7 +1,7 @@
 'use client';
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
-import { Home, Hotel, UtensilsCrossed, Calendar, Settings, BarChart3, LogOut, FileText, Image as ImageIcon } from 'lucide-react';
+import { Home, Hotel, UtensilsCrossed, Calendar, Settings, BarChart3, LogOut, FileText, Image as ImageIcon, Images } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -40,6 +40,11 @@ const menuItems = [
     title: 'Blog',
     icon: FileText,
     href: '/dashboard/blog',
+  },
+  {
+    title: 'Banquet Gallery',
+    icon: Images,
+    href: '/dashboard/banquet-gallery',
   },
   {
     title: 'Settings',

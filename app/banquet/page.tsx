@@ -3,8 +3,34 @@
 import Image from 'next/image';
 import { Users, Layout, Lightbulb, Wifi, Volume2 } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
+import { useState, useEffect } from 'react';
+import { BanquetGalleryImage } from '@/lib/models/banquet-gallery';
 
 export default function BanquetPage() {
+  const [galleryImages, setGalleryImages] = useState<BanquetGalleryImage[]>([]);
+  const [loadingGallery, setLoadingGallery] = useState(true);
+
+  useEffect(() => {
+    fetchGalleryImages();
+  }, []);
+
+  async function fetchGalleryImages() {
+    try {
+      setLoadingGallery(true);
+      const response = await fetch('/api/banquet-gallery');
+      if (response.ok) {
+        const data = await response.json();
+        // Filter only active images
+        const activeImages = data.filter((img: BanquetGalleryImage) => img.isActive);
+        setGalleryImages(activeImages);
+      }
+    } catch (error) {
+      console.error('Error fetching gallery images:', error);
+    } finally {
+      setLoadingGallery(false);
+    }
+  }
+
   return (
     <main className="bg-background">
       {/* Hero Section */}
@@ -231,40 +257,43 @@ export default function BanquetPage() {
         </div>
       </section>
 
-      {/* Additional Spaces */}
-      <section className="py-20 px-4 bg-background">
-        <div className="max-w-6xl mx-auto">
-          <ScrollAnimationWrapper animation="fadeUp">
-            <h2 className="text-4xl font-serif font-bold text-primary mb-12 text-center text-balance">
-              Additional Event Spaces
-            </h2>
-          </ScrollAnimationWrapper>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { name: 'Emerald Room', capacity: '100 guests', size: '1,500 sq ft' },
-              { name: 'Ruby Room', capacity: '75 guests', size: '1,200 sq ft' },
-              { name: 'Sapphire Room', capacity: '50 guests', size: '800 sq ft' },
-            ].map((room, index) => (
-              <ScrollAnimationWrapper key={room.name} animation="scaleIn" delay={index * 100}>
-                <div className="bg-card p-8 rounded-lg border border-border transition-smooth hover:shadow-lg hover:-translate-y-2">
-                  <h3 className="text-2xl font-serif font-bold text-primary mb-4">
-                    {room.name}
-                  </h3>
-                  <p className="text-foreground/70 mb-2">
-                    <span className="font-semibold">Capacity:</span> {room.capacity}
-                  </p>
-                  <p className="text-foreground/70 mb-6">
-                    <span className="font-semibold">Size:</span> {room.size}
-                  </p>
-                  <button className="text-primary hover:text-accent font-medium transition-colors">
-                    Learn More →
-                  </button>
-                </div>
-              </ScrollAnimationWrapper>
-            ))}
+      {/* Gallery Section */}
+      {galleryImages.length > 0 && (
+        <section className="py-20 px-4 bg-background">
+          <div className="max-w-6xl mx-auto">
+            <ScrollAnimationWrapper animation="fadeUp">
+              <h2 className="text-4xl font-serif font-bold text-primary mb-12 text-center text-balance">
+                Gallery
+              </h2>
+            </ScrollAnimationWrapper>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {galleryImages.map((image, index) => (
+                <ScrollAnimationWrapper key={image._id} animation="scaleIn" delay={index * 100}>
+                  <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300">
+                    <Image
+                      src={image.image}
+                      alt={image.title || 'Banquet gallery image'}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      unoptimized={!image.image.includes('res.cloudinary.com')}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        {image.title && (
+                          <h3 className="text-xl font-serif font-bold mb-2">{image.title}</h3>
+                        )}
+                        {image.description && (
+                          <p className="text-sm text-white/90 line-clamp-2">{image.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </ScrollAnimationWrapper>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="py-16 px-4 bg-primary text-primary-foreground">

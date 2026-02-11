@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { Banner } from '@/lib/models/banner';
+import { BanquetGalleryImage } from '@/lib/models/banquet-gallery';
 
 const DB_NAME = 'hotel_db';
-const COLLECTION_NAME = 'banners';
+const COLLECTION_NAME = 'banquet_gallery';
 
-// PUT - Update a banner
+// PUT - Update a gallery image
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -20,7 +20,7 @@ export async function PUT(
 
     if (!id) {
       return NextResponse.json(
-        { error: 'Banner ID is required' },
+        { error: 'Image ID is required' },
         { status: 400 }
       );
     }
@@ -28,7 +28,7 @@ export async function PUT(
     // Validate ObjectId format
     if (!ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: 'Invalid banner ID format' },
+        { error: 'Invalid image ID format' },
         { status: 400 }
       );
     }
@@ -41,29 +41,29 @@ export async function PUT(
     // Remove _id from update data if present
     delete updateData._id;
 
-    const result = await db.collection<Banner>(COLLECTION_NAME).updateOne(
+    const result = await db.collection<BanquetGalleryImage>(COLLECTION_NAME).updateOne(
       { _id: new ObjectId(id) },
       { $set: updateData }
     );
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Image not found' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error updating banner:', error);
+    console.error('Error updating gallery image:', error);
     return NextResponse.json(
-      { error: 'Failed to update banner' },
+      { error: 'Failed to update gallery image' },
       { status: 500 }
     );
   }
 }
 
-// DELETE - Delete a banner
+// DELETE - Delete a gallery image
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -76,7 +76,7 @@ export async function DELETE(
 
     if (!id) {
       return NextResponse.json(
-        { error: 'Banner ID is required' },
+        { error: 'Image ID is required' },
         { status: 400 }
       );
     }
@@ -84,27 +84,27 @@ export async function DELETE(
     // Validate ObjectId format
     if (!ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: 'Invalid banner ID format' },
+        { error: 'Invalid image ID format' },
         { status: 400 }
       );
     }
 
-    const result = await db.collection<Banner>(COLLECTION_NAME).deleteOne({
+    const result = await db.collection<BanquetGalleryImage>(COLLECTION_NAME).deleteOne({
       _id: new ObjectId(id),
     });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
-        { error: 'Banner not found' },
+        { error: 'Image not found' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting banner:', error);
+    console.error('Error deleting gallery image:', error);
     return NextResponse.json(
-      { error: 'Failed to delete banner' },
+      { error: 'Failed to delete gallery image' },
       { status: 500 }
     );
   }

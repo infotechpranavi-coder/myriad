@@ -32,8 +32,10 @@ export default function Home() {
       const response = await fetch('/api/banners');
       if (response.ok) {
         const data = await response.json();
-        // Filter only active banners
-        const activeBanners = data.filter((banner: Banner) => banner.isActive);
+        // Filter only active banners for home page
+        const activeBanners = data.filter(
+          (banner: Banner) => banner.isActive && (banner.page === 'home' || !banner.page)
+        );
         setBanners(activeBanners);
       }
     } catch (error) {
