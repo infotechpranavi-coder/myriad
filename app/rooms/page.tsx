@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Star, Wifi, Coffee, Tv, Wind, Sofa, Shield, CheckCircle2, MapPin, Clock, CreditCard, Zap, Waves } from 'lucide-react';
+import { Star, Wifi, Coffee, Tv, Wind, Sofa, Shield, CheckCircle2, MapPin, Clock, CreditCard, Zap, Waves, Car } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
 import { Room } from '@/lib/models/room';
 import Link from 'next/link';
@@ -49,7 +49,7 @@ export default function RoomsPage() {
   const generalAmenities = [
     { name: 'Free WiFi', icon: <Wifi size={24} /> },
     { name: '24/7 Security', icon: <Shield size={24} /> },
-    { name: 'Power Backup', icon: <Zap size={24} /> },
+    { name: 'Valet Car Parking', icon: <Car size={24} /> },
     { name: 'Room Service', icon: <Coffee size={24} /> },
     { name: 'Laundry Service', icon: <Waves size={24} /> },
     { name: 'Parking', icon: <MapPin size={24} /> },
@@ -79,12 +79,14 @@ export default function RoomsPage() {
                 <div className={`grid md:grid-cols-2 gap-16 items-center ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
                   {/* Image */}
                   <div className={`relative h-[550px] group rounded-sm overflow-hidden shadow-2xl ${index % 2 === 1 ? 'md:order-last' : 'md:order-first'}`}>
-                    <Image
-                      src={room.images[0]}
-                      alt={room.name}
-                      fill
-                      className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                    />
+                    {room.images && room.images.length > 0 && (
+                      <Image
+                        src={room.images[0]}
+                        alt={room.name || room.title || 'Room image'}
+                        fill
+                        className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   </div>
 
@@ -92,22 +94,11 @@ export default function RoomsPage() {
                   <div className={`flex flex-col space-y-10 ${index % 2 === 1 ? 'md:pr-12' : 'md:pl-12'}`}>
                     <div>
                       <h2 className="text-4xl md:text-6xl font-serif font-bold text-primary mb-6 leading-tight tracking-tight">
-                        {room.name}
+                        {room.name || room.title}
                       </h2>
                       <p className="text-lg text-foreground/60 leading-relaxed font-light mb-2">
-                        {room.description}
+                        {room.description || room.about}
                       </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-10 border-y border-border py-10">
-                      <div>
-                        <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] mb-3 font-bold">Capacity</p>
-                        <p className="text-2xl font-serif text-foreground italic">{room.capacity}</p>
-                      </div>
-                      <div>
-                        <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] mb-3 font-bold">Room Size</p>
-                        <p className="text-2xl font-serif text-foreground italic">{room.size}</p>
-                      </div>
                     </div>
 
                     <div>
@@ -128,8 +119,12 @@ export default function RoomsPage() {
                       <div>
                         <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] mb-2 font-bold">Starting from</p>
                         <div className="flex items-baseline gap-3">
-                          <span className="text-lg text-foreground/30 line-through decoration-1">₹{room.oldPrice.toLocaleString()}</span>
-                          <p className="text-5xl font-serif font-bold text-primary italic">₹{room.price.toLocaleString()}</p>
+                          {room.oldPrice && (
+                            <span className="text-lg text-foreground/30 line-through decoration-1">₹{room.oldPrice.toLocaleString()}</span>
+                          )}
+                          <p className="text-5xl font-serif font-bold text-primary italic">
+                            ₹{(room.price || room.priceSummary?.basePrice || 0).toLocaleString()}
+                          </p>
                         </div>
                       </div>
                       <Link
@@ -234,7 +229,7 @@ export default function RoomsPage() {
 
       {/* CTA */}
       <section className="py-24 px-4 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent scale-150" />
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-white via-transparent to-transparent scale-150" />
         <ScrollAnimationWrapper className="max-w-4xl mx-auto text-center relative z-10" animation="fadeUp">
           <h2 className="text-5xl md:text-6xl font-serif font-bold mb-8 tracking-tight">
             Reserve Your Experience

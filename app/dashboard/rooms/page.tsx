@@ -80,7 +80,7 @@ export default function RoomsManagementPage() {
           title: 'Error',
           description: 'Failed to fetch rooms',
           variant: 'destructive',
-        });
+  });
       }
     } catch (error) {
       console.error('Error fetching rooms:', error);
@@ -329,8 +329,8 @@ export default function RoomsManagementPage() {
       const serviceFees = formData.serviceFees ? parseFloat(formData.serviceFees) : 0;
       const totalAmount = basePrice + taxes + serviceFees;
 
-      const roomData = {
-        id: editingRoom?.id || (rooms.length + 1).toString(),
+    const roomData = {
+      id: editingRoom?.id || (rooms.length + 1).toString(),
         title: formData.title,
         checkIn: formData.checkIn || undefined,
         checkOut: formData.checkOut || undefined,
@@ -352,7 +352,7 @@ export default function RoomsManagementPage() {
         description: formData.about,
         price: basePrice,
         capacity: formData.guests,
-      };
+    };
 
       const url = editingRoom ? `/api/rooms/${editingRoom.id}` : '/api/rooms';
       const method = editingRoom ? 'PUT' : 'POST';
@@ -372,14 +372,14 @@ export default function RoomsManagementPage() {
         });
         setIsDialogOpen(false);
         fetchRooms();
-      } else {
+    } else {
         const error = await response.json();
         toast({
           title: 'Error',
           description: error.error || 'Failed to save room',
           variant: 'destructive',
         });
-      }
+    }
     } catch (error) {
       console.error('Error saving room:', error);
       toast({
@@ -432,7 +432,7 @@ export default function RoomsManagementPage() {
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
-  }
+    }
 
   return (
     <div className="space-y-6">
@@ -802,16 +802,16 @@ export default function RoomsManagementPage() {
                           <div>
                             <label className="text-xs text-muted-foreground mb-1 block">
                               Description
-                            </label>
-                            <Input
+                </label>
+                <Input
                               value={offer.description}
                               onChange={(e) =>
                                 handleOfferChange(index, 'description', e.target.value)
                               }
                               placeholder="e.g., Book 30 days in advance"
                               className="text-sm"
-                            />
-                          </div>
+                />
+              </div>
                         </div>
                         <Button
                           type="button"

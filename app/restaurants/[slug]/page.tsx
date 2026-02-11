@@ -195,27 +195,27 @@ export default function RestaurantDetailPage() {
               <Image
                 src="/Urban Dhaba.png"
                 alt="Urban Dhaba Logo"
-                width={150}
-                height={60}
-                className="h-10 w-auto object-contain"
+                width={250}
+                height={100}
+                className="h-16 md:h-20 w-auto object-contain"
               />
             )}
             {restaurant.slug === 'winking-owl' && (
               <Image
                 src="/Winkingg Owl.png"
                 alt="Winkingg Owl Logo"
-                width={150}
-                height={60}
-                className="h-10 w-auto object-contain"
+                width={250}
+                height={100}
+                className="h-16 md:h-20 w-auto object-contain"
               />
             )}
             {restaurant.slug === 'coastal-seafood' && (
               <Image
                 src="/Coastal Sea Food.png"
                 alt="Coastal Sea Food Logo"
-                width={150}
-                height={60}
-                className="h-10 w-auto object-contain"
+                width={250}
+                height={100}
+                className="h-16 md:h-20 w-auto object-contain"
               />
             )}
             <div>
@@ -243,9 +243,9 @@ export default function RestaurantDetailPage() {
               <Image
                 src="/Urban Dhaba.png"
                 alt="Urban Dhaba Logo"
-                width={300}
-                height={120}
-                className="h-20 md:h-24 w-auto object-contain mb-3"
+                width={400}
+                height={160}
+                className="h-28 md:h-32 w-auto object-contain mb-3"
               />
               <p className="text-xl text-white/90">{restaurant.cuisine}</p>
             </div>
@@ -254,9 +254,9 @@ export default function RestaurantDetailPage() {
               <Image
                 src="/Winkingg Owl.png"
                 alt="Winkingg Owl Logo"
-                width={300}
-                height={120}
-                className="h-20 md:h-24 w-auto object-contain mb-3"
+                width={400}
+                height={160}
+                className="h-28 md:h-32 w-auto object-contain mb-3"
               />
               <p className="text-xl text-white/90">{restaurant.cuisine}</p>
             </div>
@@ -265,9 +265,9 @@ export default function RestaurantDetailPage() {
               <Image
                 src="/Coastal Sea Food.png"
                 alt="Coastal Sea Food Logo"
-                width={300}
-                height={120}
-                className="h-20 md:h-24 w-auto object-contain mb-3"
+                width={400}
+                height={160}
+                className="h-28 md:h-32 w-auto object-contain mb-3"
               />
               <p className="text-xl text-white/90">{restaurant.cuisine}</p>
             </div>

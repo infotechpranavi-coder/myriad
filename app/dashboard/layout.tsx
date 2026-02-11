@@ -1,7 +1,7 @@
 'use client';
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
-import { Home, Hotel, UtensilsCrossed, Calendar, Settings, BarChart3, LogOut } from 'lucide-react';
+import { Home, Hotel, UtensilsCrossed, Calendar, Settings, BarChart3, LogOut, FileText, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -10,6 +10,11 @@ const menuItems = [
     title: 'Dashboard',
     icon: Home,
     href: '/dashboard',
+  },
+  {
+    title: 'Banners',
+    icon: ImageIcon,
+    href: '/dashboard/banners',
   },
   {
     title: 'Rooms',
@@ -30,6 +35,11 @@ const menuItems = [
     title: 'Analytics',
     icon: BarChart3,
     href: '/dashboard/analytics',
+  },
+  {
+    title: 'Blog',
+    icon: FileText,
+    href: '/dashboard/blog',
   },
   {
     title: 'Settings',

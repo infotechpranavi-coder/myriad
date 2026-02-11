@@ -62,6 +62,8 @@ export default function RestaurantsManagementPage() {
   const [viewingBooking, setViewingBooking] = useState<RestaurantBooking | null>(null);
   const [menuItems, setMenuItems] = useState<Array<{ name: string; price: string }>>([]);
   const [mainMenuItems, setMainMenuItems] = useState<Array<{ name: string; price: string }>>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   useEffect(() => {
     fetchRestaurants();
@@ -129,7 +131,7 @@ export default function RestaurantsManagementPage() {
       const items: Array<{ name: string; price: string }> = [];
       Object.values(restaurant.menu).forEach((categoryItems) => {
         categoryItems.forEach((item) => {
-          items.push({ name: item.name, price: item.price });
+          items.push({ name: item.name || '', price: item.price || '' });
         });
       });
       setMainMenuItems(items);
@@ -141,7 +143,7 @@ export default function RestaurantsManagementPage() {
       const items: Array<{ name: string; price: string }> = [];
       Object.values(restaurant.menuHighlights).forEach((categoryItems) => {
         categoryItems.forEach((item) => {
-          items.push({ name: item.name, price: item.price });
+          items.push({ name: item.name || '', price: item.price || '' });
         });
       });
       setMenuItems(items);
@@ -179,6 +181,142 @@ export default function RestaurantsManagementPage() {
     if (newImageUrl.trim() && !imageUrls.includes(newImageUrl.trim())) {
       setImageUrls([...imageUrls, newImageUrl.trim()]);
       setNewImageUrl('');
+    }
+  };
+
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Error',
+        description: 'Please select a valid image file',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: 'Error',
+        description: 'Image size must be less than 10MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+
+      const data = await response.json();
+      setFormData({ ...formData, image: data.url });
+      setUploadingImage(false);
+      toast({
+        title: 'Success',
+        description: 'Image uploaded to Cloudinary successfully',
+      });
+    } catch (error) {
+      setUploadingImage(false);
+      console.error('Upload error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to upload image',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleGalleryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingGallery(true);
+    const newImages: string[] = [];
+    const uploadPromises: Promise<void>[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          continue;
+        }
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          continue;
+        }
+
+        // Upload to Cloudinary
+        const uploadPromise = (async () => {
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || 'Upload failed');
+            }
+
+            const data = await response.json();
+            newImages.push(data.url);
+          } catch (error) {
+            console.error(`Failed to upload image ${i + 1}:`, error);
+          }
+        })();
+
+        uploadPromises.push(uploadPromise);
+      }
+
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+
+      if (newImages.length > 0) {
+        setImageUrls([...imageUrls, ...newImages]);
+        toast({
+          title: 'Success',
+          description: `${newImages.length} image(s) uploaded to Cloudinary successfully`,
+        });
+      } else {
+        toast({
+          title: 'Warning',
+          description: 'No images were uploaded. Please check file types and sizes.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload some images',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingGallery(false);
+      // Reset file input
+      e.target.value = '';
     }
   };
 
@@ -495,12 +633,46 @@ export default function RestaurantsManagementPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Main Image URL</label>
-                <Input
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                />
+                <label className="text-sm font-medium mb-2 block">Main Image</label>
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainImageUpload}
+                    disabled={uploadingImage}
+                    className="cursor-pointer h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                  />
+                  {uploadingImage && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Uploading image...
+                    </p>
+                  )}
+                  <div className="text-xs text-muted-foreground">
+                    Or enter image URL:
+                  </div>
+                  <Input
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    placeholder="https://images.unsplash.com/... or upload above"
+                  />
+                  {formData.image && (
+                    <div className="mt-2 border rounded-lg overflow-hidden">
+                      <div className="relative aspect-video">
+                        <Image
+                          src={formData.image}
+                          alt="Main image preview"
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -554,7 +726,31 @@ export default function RestaurantsManagementPage() {
                   Gallery Images
                 </label>
                 <div className="space-y-3">
+                  {/* Upload Images */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleGalleryImageUpload}
+                      disabled={uploadingGallery}
+                      className="cursor-pointer h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                    />
+                    {uploadingGallery && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Uploading images...
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Select multiple images to upload (max 5MB each)
+                    </p>
+                  </div>
+                  
                   {/* Add Image URL Input */}
+                  <div className="text-xs text-muted-foreground">
+                    Or add image URL:
+                  </div>
                   <div className="flex gap-2">
                     <Input
                       value={newImageUrl}
@@ -672,7 +868,7 @@ export default function RestaurantsManagementPage() {
                               Dish Name
                             </label>
                             <Input
-                              value={item.name}
+                              value={item.name || ''}
                               onChange={(e) =>
                                 handleMainMenuItemChange(index, 'name', e.target.value)
                               }
@@ -685,7 +881,7 @@ export default function RestaurantsManagementPage() {
                               Price
                             </label>
                             <Input
-                              value={item.price}
+                              value={item.price || ''}
                               onChange={(e) =>
                                 handleMainMenuItemChange(index, 'price', e.target.value)
                               }
@@ -738,7 +934,7 @@ export default function RestaurantsManagementPage() {
                               Dish Name
                             </label>
                             <Input
-                              value={item.name}
+                              value={item.name || ''}
                               onChange={(e) =>
                                 handleMenuItemChange(index, 'name', e.target.value)
                               }
@@ -751,7 +947,7 @@ export default function RestaurantsManagementPage() {
                               Price
                             </label>
                             <Input
-                              value={item.price}
+                              value={item.price || ''}
                               onChange={(e) =>
                                 handleMenuItemChange(index, 'price', e.target.value)
                               }

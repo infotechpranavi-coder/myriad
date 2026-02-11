@@ -34,22 +34,31 @@ export default function Header() {
 
   const restaurantOptions = [
     { name: 'Urban Dhaba', href: '/restaurants#urban-dhaba' },
-    { name: 'Coastal Sea Food', href: '/restaurants#coastal-seafood' },
     { name: 'Winking Owl', href: '/restaurants#winking-owl' },
+    { name: 'Coastal Sea Food', href: '/restaurants#coastal-seafood' },
+   
   ];
 
   return (
     <header className={`sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-2 border-primary/20 transition-all duration-300 ${hasScrolled ? 'shadow-lg shadow-primary/5' : 'shadow-sm'}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-18 md:h-20 py-2">
-          {/* Logo */}
-          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity duration-300">
+          {/* Logos */}
+          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-300">
             <Image
               src="/The Myriad Hotel.png"
               alt="The Myriad Hotel"
               width={200}
               height={70}
               className="h-12 md:h-14 w-auto object-contain"
+              priority
+            />
+            <Image
+              src="/Aditya Hospitality.png"
+              alt="Aditya Hospitality"
+              width={290}
+              height={90}
+              className="h-14 md:h-16 w-auto object-contain"
               priority
             />
           </Link>
@@ -105,11 +114,15 @@ export default function Header() {
             </DropdownMenu>
           </div>
 
-          {/* Booking Button and Mobile Menu Toggle */}
+          {/* Call Now Button and Mobile Menu Toggle */}
           <div className="flex items-center gap-3">
-            <button className="hidden sm:inline-block bg-primary text-primary-foreground px-8 py-2.5 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg hover:bg-primary/95 transition-all duration-300">
-              Book Now
-            </button>
+            <a 
+              href="tel:9619618000"
+              className="hidden sm:inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg hover:bg-primary/95 transition-all duration-300"
+            >
+              <span>Call Now :</span>
+              <span className="font-mono font-semibold text-base">961 961 8000</span>
+            </a>
             
             {/* Mobile Menu Button */}
             <button
@@ -179,9 +192,13 @@ export default function Header() {
             </div>
             
             <div className="pt-4 border-t border-primary/10 mt-4">
-              <button className="w-full bg-primary text-primary-foreground px-8 py-3 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg transition-all duration-300">
-                Book Now
-              </button>
+              <a 
+                href="tel:9619618000"
+                className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground px-8 py-3 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <span>Call Now :</span>
+                <span className="font-mono font-semibold text-base">961 961 8000</span>
+              </a>
             </div>
           </div>
         )}

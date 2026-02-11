@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import Header from '@/components/header'
+import ConditionalFooter from '@/components/conditional-footer'
 import SmoothScroll from '@/components/SmoothScroll'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -43,6 +44,7 @@ export default function RootLayout({
         <SmoothScroll />
         <Header />
         {children}
+        <ConditionalFooter />
         <Analytics />
       </body>
     </html>
