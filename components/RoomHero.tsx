@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
     Carousel,
@@ -12,8 +12,9 @@ import {
 import { MapPin } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
 import Autoplay from 'embla-carousel-autoplay';
+import { Banner } from '@/lib/models/banner';
 
-const heroSlides = [
+const defaultHeroSlides = [
     {
         id: 1,
         image: '/rooms/superior.png',
@@ -38,9 +39,52 @@ const heroSlides = [
 ];
 
 export function RoomHero() {
+    const [banners, setBanners] = useState<Banner[]>([]);
+    const [loading, setLoading] = useState(true);
     const plugin = React.useRef(
         Autoplay({ delay: 5000, stopOnInteraction: false })
     );
+
+    useEffect(() => {
+        async function fetchBanners() {
+            try {
+                const response = await fetch('/api/banners');
+                if (response.ok) {
+                    const data = await response.json();
+                    // Filter only active banners for rooms page
+                    const activeBanners = data.filter(
+                        (banner: Banner) => banner.isActive && banner.page === 'rooms'
+                    );
+                    setBanners(activeBanners);
+                }
+            } catch (error) {
+                console.error('Error fetching banners:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchBanners();
+    }, []);
+
+    // Flatten all images from all banners into a single array for the carousel
+    const allSliderImages: Array<{ image: string; banner: Banner }> = [];
+    banners.forEach((banner) => {
+        const images = banner.images && banner.images.length > 0 ? banner.images : (banner.image ? [banner.image] : []);
+        images.forEach((image) => {
+            allSliderImages.push({ image, banner });
+        });
+    });
+
+    // Use banners if available, otherwise use default slides
+    const slidesToUse = allSliderImages.length > 0 
+        ? allSliderImages.map((item, index) => ({
+            id: index + 1,
+            image: item.image,
+            title: item.banner.title || 'Luxury Rooms',
+            subtitle: item.banner.subtitle || '',
+            description: item.banner.subtitle || '',
+        }))
+        : defaultHeroSlides;
 
     return (
         <section className="relative h-[80vh] min-h-[600px] w-full overflow-hidden">
@@ -53,7 +97,7 @@ export function RoomHero() {
                 className="w-full h-full"
             >
                 <CarouselContent className="h-full ml-0">
-                    {heroSlides.map((slide) => (
+                    {slidesToUse.map((slide) => (
                         <CarouselItem key={slide.id} className="relative h-full w-full pl-0">
                             <div className="relative h-[80vh] min-h-[600px] w-full">
                                 <Image
@@ -62,6 +106,7 @@ export function RoomHero() {
                                     fill
                                     className="object-cover brightness-[0.7]"
                                     priority={slide.id === 1}
+                                    sizes="100vw"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
 
@@ -72,15 +117,19 @@ export function RoomHero() {
                                                 <MapPin size={16} className="text-primary" />
                                                 <span>Thane, Mumbai</span>
                                             </div>
-                                            <h2 className="text-lg md:text-xl font-serif italic text-primary mb-2">
-                                                {slide.subtitle}
-                                            </h2>
+                                            {slide.subtitle && (
+                                                <h2 className="text-lg md:text-xl font-serif italic text-primary mb-2">
+                                                    {slide.subtitle}
+                                                </h2>
+                                            )}
                                             <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-tight tracking-tight">
                                                 {slide.title}
                                             </h1>
-                                            <p className="text-lg md:text-xl text-white/80 mb-10 leading-relaxed font-light">
-                                                {slide.description}
-                                            </p>
+                                            {slide.description && (
+                                                <p className="text-lg md:text-xl text-white/80 mb-10 leading-relaxed font-light">
+                                                    {slide.description}
+                                                </p>
+                                            )}
                                         </ScrollAnimationWrapper>
                                     </div>
                                 </div>

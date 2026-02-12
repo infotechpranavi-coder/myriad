@@ -8,7 +8,7 @@ export interface Banner {
   buttonText?: string;
   isActive: boolean;
   order: number;
-  page?: 'home' | 'about';
+  page?: 'home' | 'about' | 'rooms';
   createdAt?: Date;
   updatedAt?: Date;
 }

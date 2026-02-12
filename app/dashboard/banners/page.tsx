@@ -40,7 +40,7 @@ export default function BannersManagementPage() {
     link: '',
     buttonText: 'Learn More',
     isActive: true,
-    page: 'home' as 'home' | 'about',
+    page: 'home' as 'home' | 'about' | 'rooms',
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<number[]>([]);
@@ -609,7 +609,7 @@ export default function BannersManagementPage() {
               <Label htmlFor="page">Page *</Label>
               <Select
                 value={formData.page}
-                onValueChange={(value: 'home' | 'about') => setFormData({ ...formData, page: value })}
+                onValueChange={(value: 'home' | 'about' | 'rooms') => setFormData({ ...formData, page: value })}
               >
                 <SelectTrigger id="page">
                   <SelectValue placeholder="Select page" />
@@ -617,6 +617,7 @@ export default function BannersManagementPage() {
                 <SelectContent>
                   <SelectItem value="home">Home</SelectItem>
                   <SelectItem value="about">About</SelectItem>
+                  <SelectItem value="rooms">Rooms</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
