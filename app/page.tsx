@@ -15,16 +15,40 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import React from 'react';
 import { Banner } from '@/lib/models/banner';
+import { Room } from '@/lib/models/room';
+import { Restaurant } from '@/lib/models/restaurant';
+import { Testimonial } from '@/lib/models/testimonial';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function Home() {
   const [banners, setBanners] = useState<Banner[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
+  const [inquiryFormData, setInquiryFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    eventType: '',
+    eventDate: '',
+    guestCount: '',
+    message: '',
+  });
   const plugin = React.useRef(
     Autoplay({ delay: 5000, stopOnInteraction: false })
   );
 
   useEffect(() => {
     fetchBanners();
+    fetchRooms();
+    fetchRestaurants();
+    fetchTestimonials();
   }, []);
 
   async function fetchBanners() {
@@ -45,16 +69,102 @@ export default function Home() {
     }
   }
 
+  async function fetchRooms() {
+    try {
+      const response = await fetch('/api/rooms');
+      if (response.ok) {
+        const data = await response.json();
+        // Limit to first 3 rooms for the signature section
+        setRooms(data.slice(0, 3));
+      } else {
+        console.error('Failed to fetch rooms');
+      }
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+    }
+  }
+
+  async function fetchRestaurants() {
+    try {
+      const response = await fetch('/api/restaurants');
+      if (response.ok) {
+        const data = await response.json();
+        // Limit to first 3 restaurants for the section
+        setRestaurants(data.slice(0, 3));
+      } else {
+        console.error('Failed to fetch restaurants');
+      }
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    }
+  }
+
+  async function fetchTestimonials() {
+    try {
+      const response = await fetch('/api/testimonials');
+      if (response.ok) {
+        const data = await response.json();
+        // Filter only active testimonials and sort by order
+        const activeTestimonials = data
+          .filter((t: Testimonial) => t.isActive)
+          .sort((a: Testimonial, b: Testimonial) => (a.order || 0) - (b.order || 0));
+        setTestimonials(activeTestimonials);
+      } else {
+        console.error('Failed to fetch testimonials');
+      }
+    } catch (error) {
+      console.error('Error fetching testimonials:', error);
+    }
+  }
+
+  const handleInquirySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log('Inquiry submitted:', inquiryFormData);
+    // You can add API call here to save the inquiry
+    alert('Thank you for your inquiry! We will contact you soon.');
+    setInquiryModalOpen(false);
+    // Reset form
+    setInquiryFormData({
+      name: '',
+      email: '',
+      phone: '',
+      eventType: '',
+      eventDate: '',
+      guestCount: '',
+      message: '',
+    });
+  };
+
   // Default banner if none exist
   const defaultBanner = {
     title: 'The Myriad Hotel',
     subtitle: 'Experience Timeless Luxury',
     image: '/hero.jpg',
+    images: ['/hero.jpg'],
     link: '/rooms',
     buttonText: 'Reserve Your Stay',
   };
 
   const displayBanners = banners.length > 0 ? banners : [defaultBanner];
+
+  // Flatten all images from banners into a single array for the slider
+  const allSliderImages = displayBanners.flatMap((banner) => {
+    if (banner.images && banner.images.length > 0) {
+      return banner.images.map((img, index) => ({
+        image: img,
+        banner: banner,
+        slideIndex: index,
+      }));
+    } else if (banner.image) {
+      return [{
+        image: banner.image,
+        banner: banner,
+        slideIndex: 0,
+      }];
+    }
+    return [];
+  });
 
   return (
     <main className="bg-background">
@@ -83,7 +193,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        ) : displayBanners.length > 1 ? (
+        ) : allSliderImages.length > 1 ? (
           <Carousel
             opts={{
               align: 'start',
@@ -93,12 +203,12 @@ export default function Home() {
             className="w-full h-full"
           >
             <CarouselContent className="h-full ml-0">
-              {displayBanners.map((banner, index) => (
-                <CarouselItem key={index} className="relative h-screen w-full pl-0">
+              {allSliderImages.map((slide, index) => (
+                <CarouselItem key={`${(slide.banner as any)._id || index}-${slide.slideIndex}`} className="relative h-screen w-full pl-0">
                   <div className="relative h-screen w-full">
                     <Image
-                      src={banner.image || '/hero.jpg'}
-                      alt={banner.title || 'The Myriad Hotel'}
+                      src={slide.image || '/hero.jpg'}
+                      alt={slide.banner.title || 'The Myriad Hotel'}
                       fill
                       className="object-cover brightness-75"
                       priority={index === 0}
@@ -109,19 +219,19 @@ export default function Home() {
                     <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-4">
                       <div>
                         <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
-                          {banner.title || 'The Myriad Hotel'}
+                          {slide.banner.title || 'The Myriad Hotel'}
                         </h1>
-                        {banner.subtitle && (
+                        {slide.banner.subtitle && (
                           <p className="text-xl md:text-2xl mb-8 font-light animate-fade-up animate-delay-200">
-                            {banner.subtitle}
+                            {slide.banner.subtitle}
                           </p>
                         )}
-                        {(banner.link || banner.buttonText) && (
+                        {(slide.banner.link || slide.banner.buttonText) && (
                           <Link
-                            href={banner.link || '/rooms'}
+                            href={slide.banner.link || '/rooms'}
                             className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 animate-fade-up animate-delay-300"
                           >
-                            {banner.buttonText || 'Reserve Your Stay'}
+                            {slide.banner.buttonText || 'Reserve Your Stay'}
                           </Link>
                         )}
                       </div>
@@ -133,11 +243,11 @@ export default function Home() {
             <CarouselPrevious className="left-4 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
             <CarouselNext className="right-4 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
           </Carousel>
-        ) : (
+        ) : allSliderImages.length === 1 ? (
           <div className="relative w-full h-full">
             <Image
-              src={displayBanners[0]?.image || '/hero.jpg'}
-              alt={displayBanners[0]?.title || 'The Myriad Hotel'}
+              src={allSliderImages[0].image || '/hero.jpg'}
+              alt={allSliderImages[0].banner.title || 'The Myriad Hotel'}
               fill
               className="object-cover brightness-75"
               priority
@@ -148,21 +258,50 @@ export default function Home() {
             <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-4">
               <div>
                 <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
-                  {displayBanners[0]?.title || 'The Myriad Hotel'}
+                  {allSliderImages[0].banner.title || 'The Myriad Hotel'}
                 </h1>
-                {displayBanners[0]?.subtitle && (
+                {allSliderImages[0].banner.subtitle && (
                   <p className="text-xl md:text-2xl mb-8 font-light animate-fade-up animate-delay-200">
-                    {displayBanners[0].subtitle}
+                    {allSliderImages[0].banner.subtitle}
                   </p>
                 )}
-                {(displayBanners[0]?.link || displayBanners[0]?.buttonText) && (
+                {(allSliderImages[0].banner.link || allSliderImages[0].banner.buttonText) && (
                   <Link
-                    href={displayBanners[0].link || '/rooms'}
+                    href={allSliderImages[0].banner.link || '/rooms'}
                     className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 animate-fade-up animate-delay-300"
                   >
-                    {displayBanners[0].buttonText || 'Reserve Your Stay'}
+                    {allSliderImages[0].banner.buttonText || 'Reserve Your Stay'}
                   </Link>
                 )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="relative w-full h-full">
+            <Image
+              src="/hero.jpg"
+              alt="The Myriad Hotel"
+              fill
+              className="object-cover brightness-75"
+              priority
+              quality={95}
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+            <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-4">
+              <div>
+                <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
+                  The Myriad Hotel
+                </h1>
+                <p className="text-xl md:text-2xl mb-8 font-light animate-fade-up animate-delay-200">
+                  Experience Timeless Luxury
+                </p>
+                <Link
+                  href="/rooms"
+                  className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 animate-fade-up animate-delay-300"
+                >
+                  Reserve Your Stay
+                </Link>
               </div>
             </div>
           </div>
@@ -180,54 +319,67 @@ export default function Home() {
             </h2>
           </ScrollAnimationWrapper>
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { name: 'Deluxe Suite', price: '$299', image: '/rooms/deluxe.png' },
-              { name: 'Premium Suite', price: '$449', image: '/rooms/executive.png' },
-              { name: 'Royal Suite', price: '$699', image: '/rooms/superior.png' },
-            ].map((room, index) => (
-              <ScrollAnimationWrapper key={room.name} animation="scaleIn" delay={index * 100}>
-                <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
-                  <div className="relative h-64 overflow-hidden">
-                    <Image
-                      src={room.image || "/placeholder.svg"}
-                      alt={room.name}
-                      fill
-                      className="object-cover hover:scale-105 transition-transform duration-300"
-                      quality={90}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-serif font-bold text-primary mb-2">{room.name}</h3>
-                    <div className="flex items-center gap-1 mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={16} className="fill-accent text-accent" />
-                      ))}
+            {rooms.length === 0 ? (
+              <div className="col-span-3 text-center py-12 text-muted-foreground">
+                <p>No rooms available at the moment.</p>
+              </div>
+            ) : (
+              rooms.map((room, index) => (
+                <ScrollAnimationWrapper key={room.id || room._id || index} animation="scaleIn" delay={index * 100}>
+                  <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
+                    <div className="relative h-64 overflow-hidden">
+                      <Image
+                        src={room.images && room.images.length > 0 ? room.images[0] : (room.gallery && room.gallery.length > 0 ? room.gallery[0] : "/placeholder.svg")}
+                        alt={room.name || room.title || 'Room image'}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        quality={90}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
                     </div>
-                    <ul className="space-y-2 mb-6 text-foreground/70">
-                      <li className="flex items-center gap-2">
-                        <Wifi size={16} /> High-speed WiFi
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Coffee size={16} /> Premium Toiletries
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Dumbbell size={16} /> City View Balcony
-                      </li>
-                    </ul>
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold text-primary">{room.price}</span>
-                      <Link
-                        href="/rooms"
-                        className="bg-primary text-primary-foreground px-6 py-2 rounded transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
-                      >
-                        View Details
-                      </Link>
+                    <div className="p-6">
+                      <h3 className="text-2xl font-serif font-bold text-primary mb-2">{room.name || room.title}</h3>
+                      <div className="flex items-center gap-1 mb-4">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={16} className="fill-accent text-accent" />
+                        ))}
+                      </div>
+                      <ul className="space-y-2 mb-6 text-foreground/70">
+                        {room.amenities && room.amenities.slice(0, 3).map((amenity, i) => (
+                          <li key={i} className="flex items-center gap-2">
+                            <Wifi size={16} /> {amenity}
+                          </li>
+                        ))}
+                        {(!room.amenities || room.amenities.length === 0) && (
+                          <>
+                            <li className="flex items-center gap-2">
+                              <Wifi size={16} /> High-speed WiFi
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Coffee size={16} /> Premium Toiletries
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <Dumbbell size={16} /> City View Balcony
+                            </li>
+                          </>
+                        )}
+                      </ul>
+                      <div className="flex justify-between items-center">
+                        <span className="text-2xl font-bold text-primary">
+                          ₹{(room.price || room.priceSummary?.basePrice || 0).toLocaleString()}
+                        </span>
+                        <Link
+                          href={`/rooms/${room.id || room._id}`}
+                          className="bg-primary text-primary-foreground px-6 py-2 rounded transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
+                        >
+                          View Details
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </ScrollAnimationWrapper>
-            ))}
+                </ScrollAnimationWrapper>
+              ))
+            )}
           </div>
           <div className="text-center mt-12">
             <Link
@@ -249,51 +401,41 @@ export default function Home() {
             </h2>
           </ScrollAnimationWrapper>
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { 
-                name: 'Urban Dhaba', 
-                cuisine: 'Contemporary Indian', 
-                image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80&fit=crop' 
-              },
-              { 
-                name: 'Coastal Sea Food', 
-                cuisine: 'Fresh Seafood', 
-                image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80&fit=crop' 
-              },
-              { 
-                name: 'Winking Owl – The Lounge Bar', 
-                cuisine: 'Craft Cocktails & Tapas', 
-                image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80&fit=crop' 
-              },
-            ].map((restaurant, index) => (
-              <ScrollAnimationWrapper key={restaurant.name} animation="fadeUp" delay={index * 100}>
-                <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
-                  <div className="relative h-48 overflow-hidden bg-muted">
-                    <Image
-                      src={restaurant.image || "/placeholder.jpg"}
-                      alt={`${restaurant.name} - ${restaurant.cuisine}`}
-                      fill
-                      className="object-cover hover:scale-105 transition-transform duration-300"
-                      quality={95}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
+            {restaurants.length === 0 ? (
+              <div className="col-span-3 text-center py-12 text-muted-foreground">
+                <p>No restaurants available at the moment.</p>
+              </div>
+            ) : (
+              restaurants.map((restaurant, index) => (
+                <ScrollAnimationWrapper key={restaurant.id || restaurant._id || index} animation="fadeUp" delay={index * 100}>
+                  <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
+                    <div className="relative h-48 overflow-hidden bg-muted">
+                      <Image
+                        src={restaurant.image || (restaurant.gallery && restaurant.gallery.length > 0 ? restaurant.gallery[0] : "/placeholder.jpg")}
+                        alt={`${restaurant.name} - ${restaurant.cuisine}`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        quality={95}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-2xl font-serif font-bold text-primary mb-1">{restaurant.name}</h3>
+                      <p className="text-foreground/70 mb-4">{restaurant.cuisine}</p>
+                      <p className="text-foreground/80 mb-6 text-sm">
+                        {restaurant.description || restaurant.about || 'Experience culinary excellence with our award-winning chefs and carefully curated menus.'}
+                      </p>
+                      <Link
+                        href={`/restaurants#${restaurant.slug || restaurant.name.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="text-primary hover:text-accent font-medium transition-colors"
+                      >
+                        Explore Menu →
+                      </Link>
+                    </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-serif font-bold text-primary mb-1">{restaurant.name}</h3>
-                    <p className="text-foreground/70 mb-4">{restaurant.cuisine}</p>
-                    <p className="text-foreground/80 mb-6 text-sm">
-                      Experience culinary excellence with our award-winning chefs and carefully curated menus.
-                    </p>
-                    <Link
-                      href="/restaurants"
-                      className="text-primary hover:text-accent font-medium transition-colors"
-                    >
-                      Explore Menu →
-                    </Link>
-                  </div>
-                </div>
-              </ScrollAnimationWrapper>
-            ))}
+                </ScrollAnimationWrapper>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -330,12 +472,12 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href="/banquet"
+                <button
+                  onClick={() => setInquiryModalOpen(true)}
                   className="bg-primary text-primary-foreground px-8 py-3 rounded font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 inline-block"
                 >
                   Inquiry Details
-                </Link>
+                </button>
               </div>
             </ScrollAnimationWrapper>
           </div>
@@ -350,45 +492,207 @@ export default function Home() {
               Guest Testimonials
             </h2>
           </ScrollAnimationWrapper>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { name: 'Sarah Mitchell', role: 'Wedding Guest', quote: 'Our wedding at The Myriad was absolutely magical. Every detail was perfect.' },
-              { name: 'James Chen', role: 'Business Traveler', quote: 'The service and attention to detail are unmatched. I always stay here.' },
-              { name: 'Emma Wilson', role: 'Food Critic', quote: 'The restaurants are world-class. The dining experience is exceptional.' },
-            ].map((testimonial, index) => (
-              <ScrollAnimationWrapper key={testimonial.name} animation="fadeUp" delay={index * 100}>
-                <div className="bg-card p-8 rounded-lg border border-border transition-smooth hover:shadow-lg hover:-translate-y-2">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} className="fill-accent text-accent" />
-                    ))}
+          {testimonials.length > 0 ? (
+            <Carousel
+              plugins={[plugin.current]}
+              className="w-full"
+              opts={{
+                align: 'start',
+                loop: true,
+              }}
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {testimonials.map((testimonial) => (
+                  <CarouselItem key={testimonial._id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                    <div className="bg-card p-8 rounded-lg border border-border transition-smooth hover:shadow-lg hover:-translate-y-2 h-full">
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(testimonial.rating || 5)].map((_, i) => (
+                          <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
+                      <div>
+                        <p className="font-semibold text-foreground">{testimonial.name}</p>
+                        <p className="text-foreground/60 text-sm">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                { name: 'Sarah Mitchell', role: 'Wedding Guest', quote: 'Our wedding at The Myriad was absolutely magical. Every detail was perfect.' },
+                { name: 'James Chen', role: 'Business Traveler', quote: 'The service and attention to detail are unmatched. I always stay here.' },
+                { name: 'Emma Wilson', role: 'Food Critic', quote: 'The restaurants are world-class. The dining experience is exceptional.' },
+              ].map((testimonial, index) => (
+                <ScrollAnimationWrapper key={testimonial.name} animation="fadeUp" delay={index * 100}>
+                  <div className="bg-card p-8 rounded-lg border border-border transition-smooth hover:shadow-lg hover:-translate-y-2">
+                    <div className="flex gap-1 mb-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={16} className="fill-accent text-accent" />
+                      ))}
+                    </div>
+                    <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
+                    <div>
+                      <p className="font-semibold text-foreground">{testimonial.name}</p>
+                      <p className="text-foreground/60 text-sm">{testimonial.role}</p>
+                    </div>
                   </div>
-                  <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
-                  <div>
-                    <p className="font-semibold text-foreground">{testimonial.name}</p>
-                    <p className="text-foreground/60 text-sm">{testimonial.role}</p>
-                  </div>
-                </div>
-              </ScrollAnimationWrapper>
-            ))}
-          </div>
+                </ScrollAnimationWrapper>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-primary text-primary-foreground">
-        <ScrollAnimationWrapper className="max-w-4xl mx-auto text-center" animation="fadeUp">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-balance">
-            Ready to Experience Luxury?
-          </h2>
-          <p className="text-lg mb-8 opacity-90">
-            Book your unforgettable stay at The Myriad Hotel today
-          </p>
-          <button className="bg-primary-foreground text-primary px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95">
-            Book Your Stay Now
-          </button>
-        </ScrollAnimationWrapper>
-      </section>
+      {/* Inquiry Modal */}
+      <Dialog open={inquiryModalOpen} onOpenChange={setInquiryModalOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-serif text-primary">Event Inquiry</DialogTitle>
+            <DialogDescription>
+              Fill out the form below to inquire about hosting your event at The Myriad Hotel.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleInquirySubmit} className="space-y-4 mt-4">
+            {/* Name Field */}
+            <div className="space-y-2">
+              <Label htmlFor="inquiry-name" className="text-foreground font-medium">
+                Full Name *
+              </Label>
+              <Input
+                id="inquiry-name"
+                type="text"
+                placeholder="Enter your full name"
+                value={inquiryFormData.name}
+                onChange={(e) => setInquiryFormData({ ...inquiryFormData, name: e.target.value })}
+                required
+                className="w-full"
+              />
+            </div>
+
+            {/* Email Field */}
+            <div className="space-y-2">
+              <Label htmlFor="inquiry-email" className="text-foreground font-medium">
+                Email Address *
+              </Label>
+              <Input
+                id="inquiry-email"
+                type="email"
+                placeholder="Enter your email address"
+                value={inquiryFormData.email}
+                onChange={(e) => setInquiryFormData({ ...inquiryFormData, email: e.target.value })}
+                required
+                className="w-full"
+              />
+            </div>
+
+            {/* Phone Field */}
+            <div className="space-y-2">
+              <Label htmlFor="inquiry-phone" className="text-foreground font-medium">
+                Phone Number *
+              </Label>
+              <Input
+                id="inquiry-phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                value={inquiryFormData.phone}
+                onChange={(e) => setInquiryFormData({ ...inquiryFormData, phone: e.target.value })}
+                required
+                className="w-full"
+              />
+            </div>
+
+            {/* Event Type Field */}
+            <div className="space-y-2">
+              <Label htmlFor="inquiry-event-type" className="text-foreground font-medium">
+                Event Type *
+              </Label>
+              <Input
+                id="inquiry-event-type"
+                type="text"
+                placeholder="e.g., Wedding, Conference, Birthday, etc."
+                value={inquiryFormData.eventType}
+                onChange={(e) => setInquiryFormData({ ...inquiryFormData, eventType: e.target.value })}
+                required
+                className="w-full"
+              />
+            </div>
+
+            {/* Event Date and Guest Count */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="inquiry-event-date" className="text-foreground font-medium">
+                  Event Date *
+                </Label>
+                <Input
+                  id="inquiry-event-date"
+                  type="date"
+                  value={inquiryFormData.eventDate}
+                  onChange={(e) => setInquiryFormData({ ...inquiryFormData, eventDate: e.target.value })}
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="inquiry-guest-count" className="text-foreground font-medium">
+                  Expected Guests *
+                </Label>
+                <Input
+                  id="inquiry-guest-count"
+                  type="number"
+                  placeholder="Number of guests"
+                  value={inquiryFormData.guestCount}
+                  onChange={(e) => setInquiryFormData({ ...inquiryFormData, guestCount: e.target.value })}
+                  required
+                  min="1"
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Message Field */}
+            <div className="space-y-2">
+              <Label htmlFor="inquiry-message" className="text-foreground font-medium">
+                Additional Details
+              </Label>
+              <Textarea
+                id="inquiry-message"
+                placeholder="Tell us more about your event requirements..."
+                value={inquiryFormData.message}
+                onChange={(e) => setInquiryFormData({ ...inquiryFormData, message: e.target.value })}
+                rows={4}
+                className="w-full"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setInquiryModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-primary text-primary-foreground hover:opacity-90"
+              >
+                Submit Inquiry
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
     </main>
   );

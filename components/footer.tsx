@@ -23,13 +23,13 @@ export default function Footer() {
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 mt-1 text-primary flex-shrink-0" />
                 <p className="text-background/70 text-sm">
-                  Luxury Hotel District, City Center
+                  The Myriad Hotel, Opp. Indian Oil Petrol Pump, Mira Bhayander Road, Mira Road (E)
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                <a href="tel:+1234567890" className="text-background/70 hover:text-background text-sm transition-colors">
-                  +1 (234) 567-890
+                <a href="tel:9619618000" className="text-background/70 hover:text-background text-sm transition-colors">
+                  961 961 8000
                 </a>
               </div>
               <div className="flex items-center gap-3">

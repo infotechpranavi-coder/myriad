@@ -33,10 +33,19 @@ export async function PUT(
       );
     }
 
-    const updateData = {
+    // Ensure images array is set and image field is set to first image for backward compatibility
+    const updateData: any = {
       ...body,
       updatedAt: new Date(),
     };
+
+    // If images array is provided, ensure image field is set to first image
+    if (updateData.images && Array.isArray(updateData.images) && updateData.images.length > 0) {
+      updateData.image = updateData.images[0];
+    } else if (updateData.image && !updateData.images) {
+      // If only image is provided, create images array
+      updateData.images = [updateData.image];
+    }
 
     // Remove _id from update data if present
     delete updateData._id;

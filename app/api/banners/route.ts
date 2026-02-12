@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
     const newBanner: Banner = {
       title: body.title,
       subtitle: body.subtitle || '',
-      image: body.image,
+      image: body.image || (body.images && body.images.length > 0 ? body.images[0] : ''),
+      images: body.images || (body.image ? [body.image] : []),
       link: body.link || '',
       buttonText: body.buttonText || 'Learn More',
       isActive: body.isActive !== undefined ? body.isActive : true,

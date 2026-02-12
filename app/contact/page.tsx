@@ -105,9 +105,9 @@ export default function ContactPage() {
                       Address
                     </h3>
                     <p className="text-foreground/70">
-                      123 Luxury Avenue<br />
-                      Downtown District<br />
-                      City, State 12345
+                      The Myriad Hotel<br />
+                      Opp. Indian Oil Petrol Pump<br />
+                      Mira Bhayander Road, Mira Road (E)
                     </p>
                   </div>
                 </div>
@@ -123,9 +123,9 @@ export default function ContactPage() {
                       Phone
                     </h3>
                     <p className="text-foreground/70">
-                      Main: +1 (555) 123-4567<br />
-                      Reservations: +1 (555) 123-4568<br />
-                      Events: +1 (555) 123-4569
+                      <a href="tel:9619618000" className="hover:text-primary transition-colors">
+                        961 961 8000
+                      </a>
                     </p>
                   </div>
                 </div>

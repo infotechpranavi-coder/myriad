@@ -84,8 +84,9 @@ export default function PrivacyPage() {
               </p>
               <div className="mt-4 bg-muted/30 p-4 rounded">
                 <p><strong>The Myriad Hotel</strong></p>
+                <p>Opp. Indian Oil Petrol Pump, Mira Bhayander Road, Mira Road (E)</p>
                 <p>Email: privacy@themyriad.com</p>
-                <p>Phone: +1 (555) 123-4567</p>
+                <p>Phone: <a href="tel:9619618000" className="text-primary hover:underline">961 961 8000</a></p>
               </div>
             </div>
 

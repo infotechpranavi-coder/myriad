@@ -36,12 +36,14 @@ export default function BannersManagementPage() {
     title: '',
     subtitle: '',
     image: '',
+    images: [] as string[],
     link: '',
     buttonText: 'Learn More',
     isActive: true,
     page: 'home' as 'home' | 'about',
   });
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState<number[]>([]);
 
   useEffect(() => {
     fetchBanners();
@@ -79,6 +81,7 @@ export default function BannersManagementPage() {
       title: '',
       subtitle: '',
       image: '',
+      images: [],
       link: '',
       buttonText: 'Learn More',
       isActive: true,
@@ -93,6 +96,7 @@ export default function BannersManagementPage() {
       title: banner.title || '',
       subtitle: banner.subtitle || '',
       image: banner.image || '',
+      images: banner.images || (banner.image ? [banner.image] : []),
       link: banner.link || '',
       buttonText: banner.buttonText || 'Learn More',
       isActive: banner.isActive !== undefined ? banner.isActive : true,
@@ -102,10 +106,13 @@ export default function BannersManagementPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.title || !formData.image) {
+    // Use images array if available, otherwise fall back to single image
+    const imagesToSave = formData.images.length > 0 ? formData.images : (formData.image ? [formData.image] : []);
+    
+    if (!formData.title || imagesToSave.length === 0) {
       toast({
         title: 'Validation Error',
-        description: 'Title and Image are required',
+        description: 'Title and at least one image are required',
         variant: 'destructive',
       });
       return;
@@ -115,10 +122,15 @@ export default function BannersManagementPage() {
     try {
       if (editingBanner) {
         // Update existing banner
+        const updateData = {
+          ...formData,
+          images: imagesToSave,
+          image: imagesToSave[0] || formData.image, // Keep first image for backward compatibility
+        };
         const response = await fetch(`/api/banners/${editingBanner._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updateData),
         });
 
         if (response.ok) {
@@ -133,10 +145,15 @@ export default function BannersManagementPage() {
         }
       } else {
         // Create new banner
+        const createData = {
+          ...formData,
+          images: imagesToSave,
+          image: imagesToSave[0] || formData.image, // Keep first image for backward compatibility
+        };
         const response = await fetch('/api/banners', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(createData),
         });
 
         if (response.ok) {
@@ -230,7 +247,11 @@ export default function BannersManagementPage() {
       }
 
       const data = await response.json();
-      setFormData((prev) => ({ ...prev, image: data.url }));
+      setFormData((prev) => ({ 
+        ...prev, 
+        image: data.url,
+        images: prev.images.length > 0 ? [...prev.images, data.url] : [data.url]
+      }));
       toast({
         title: 'Success',
         description: 'Image uploaded successfully',
@@ -244,6 +265,105 @@ export default function BannersManagementPage() {
       });
     } finally {
       setUploadingImage(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  const handleMultipleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const filesArray = Array.from(files);
+    
+    // Validate all files
+    for (const file of filesArray) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Invalid File',
+          description: `${file.name} is not an image file`,
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File Too Large',
+          description: `${file.name} is larger than 5MB`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    const uploadPromises = filesArray.map(async (file, index) => {
+      setUploadingImages((prev) => [...prev, index]);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/upload?folder=myriad-hotel/banners', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        return data.url;
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        toast({
+          title: 'Error',
+          description: `Failed to upload ${file.name}`,
+          variant: 'destructive',
+        });
+        return null;
+      } finally {
+        setUploadingImages((prev) => prev.filter((i) => i !== index));
+      }
+    });
+
+    const uploadedUrls = await Promise.all(uploadPromises);
+    const validUrls = uploadedUrls.filter((url) => url !== null) as string[];
+
+    if (validUrls.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...validUrls],
+        image: prev.image || validUrls[0], // Set first image if no image exists
+      }));
+      toast({
+        title: 'Success',
+        description: `${validUrls.length} image(s) uploaded successfully`,
+      });
+    }
+
+    // Reset file input
+    event.target.value = '';
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        images: newImages,
+        image: newImages[0] || prev.image, // Keep first image or existing image
+      };
+    });
+  };
+
+  const handleAddImageUrl = () => {
+    const url = prompt('Enter image URL:');
+    if (url && url.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, url.trim()],
+        image: prev.image || url.trim(), // Set first image if no image exists
+      }));
     }
   };
 
@@ -504,37 +624,57 @@ export default function BannersManagementPage() {
               </p>
             </div>
 
-            {/* Image Upload Section */}
+            {/* Multiple Images Upload Section */}
             <div className="space-y-4">
-              <Label>Banner Image *</Label>
+              <div className="flex items-center justify-between">
+                <Label>Banner Images * (Multiple images will be shown in slider)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddImageUrl}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add URL
+                </Button>
+              </div>
+              
               <div className="space-y-3">
-                {/* Image URL Input */}
+                {/* Multiple File Upload */}
                 <div className="space-y-2">
-                  <Label htmlFor="image" className="text-sm">Image URL</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="image"
-                      value={formData.image}
-                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      placeholder="Enter image URL or upload a file"
-                      className="flex-1"
+                  <Label className="text-sm">Upload Multiple Images</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleMultipleImageUpload}
+                      className="hidden"
+                      id="images-upload"
+                      disabled={uploadingImages.length > 0}
                     />
-                    {formData.image && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setFormData({ ...formData, image: '' })}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <label
+                      htmlFor="images-upload"
+                      className="flex items-center gap-2 px-4 py-2 border border-border rounded-md cursor-pointer hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingImages.length > 0 ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Uploading {uploadingImages.length} image(s)...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          <span>Choose Multiple Files</span>
+                        </>
+                      )}
+                    </label>
                   </div>
                 </div>
 
-                {/* File Upload */}
+                {/* Single File Upload (for backward compatibility) */}
                 <div className="space-y-2">
-                  <Label className="text-sm">Or Upload Image</Label>
+                  <Label className="text-sm">Or Upload Single Image</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="file"
@@ -560,34 +700,70 @@ export default function BannersManagementPage() {
                         </>
                       )}
                     </label>
-                    {formData.image && (
-                      <span className="text-sm text-muted-foreground">
-                        Image selected
-                      </span>
-                    )}
                   </div>
                 </div>
 
-                {/* Image Preview */}
-                {formData.image && formData.image.trim() !== '' && (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
-                    {formData.image.startsWith('http://') || formData.image.startsWith('https://') || formData.image.startsWith('/') ? (
-                      <Image
-                        src={formData.image}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                        unoptimized={!formData.image.includes('res.cloudinary.com')}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder.svg';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
-                        <p className="text-sm">Invalid image URL</p>
-                      </div>
-                    )}
+                {/* Images Preview Grid */}
+                {formData.images.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm">Uploaded Images ({formData.images.length})</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {formData.images.map((img, index) => (
+                        <div key={index} className="relative group">
+                          <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border">
+                            <Image
+                              src={img}
+                              alt={`Banner image ${index + 1}`}
+                              fill
+                              className="object-cover"
+                              unoptimized={!img.includes('res.cloudinary.com')}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder.svg';
+                              }}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleRemoveImage(index)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                            {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Single Image Preview (for backward compatibility) */}
+                {formData.images.length === 0 && formData.image && formData.image.trim() !== '' && (
+                  <div className="space-y-2">
+                    <Label className="text-sm">Image Preview</Label>
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
+                      {formData.image.startsWith('http://') || formData.image.startsWith('https://') || formData.image.startsWith('/') ? (
+                        <Image
+                          src={formData.image}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                          unoptimized={!formData.image.includes('res.cloudinary.com')}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+                          <p className="text-sm">Invalid image URL</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

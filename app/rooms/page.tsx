@@ -213,36 +213,32 @@ export default function RoomsPage() {
               <p className="text-xl text-foreground/50 font-light leading-relaxed mb-10">
                 Situated in the heart of Thane's business district, our location offers seamless connectivity to Mumbai's major hubs, premium shopping centers, and tranquil leisure spots.
               </p>
-              <div className="relative h-64 w-full bg-muted/40 rounded-sm border border-border group overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center group-hover:scale-110 transition-transform duration-700">
-                    <MapPin className="text-primary mx-auto mb-3" size={40} />
-                    <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/60">View on Map</p>
-                  </div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none" />
+              <div className="relative h-64 w-full rounded-sm border border-border overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps?q=The+Myriad+Hotel,+Mira+Bhayander+Link+Rd,+opp.+Indian+Petrol+Pump,+Sai+Baba+Nagar,+Mira+Road+East,+Mira+Bhayandar,+Maharashtra+401107&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="w-full h-full"
+                  title="The Myriad Hotel Location"
+                />
+                <a
+                  href="https://www.google.com/maps/dir//The+Myriad+Hotel,+Mira+Bhayander+Link+Rd,+opp.+Indian+Petrol+Pump,+Sai+Baba+Nagar,+Mira+Road+East,+Mira+Bhayandar,+Maharashtra+401107/@19.2791858,72.8633633,15z/data=!3m1!4b1!4m8!4m7!1m0!1m5!1m1!1s0x3be7b1cfe7edd04d:0xc00c9dc4003d201c!2m2!1d72.8705755!2d19.2843149?entry=ttu&g_ep=EgoyMDI2MDIwNC4wIKXMDSoASAFQAw%3D%3D"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute bottom-2 right-2 bg-primary text-primary-foreground px-4 py-2 rounded text-xs font-medium hover:opacity-90 transition-opacity z-10 shadow-lg"
+                >
+                  Open in Google Maps
+                </a>
               </div>
             </div>
           </ScrollAnimationWrapper>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-white via-transparent to-transparent scale-150" />
-        <ScrollAnimationWrapper className="max-w-4xl mx-auto text-center relative z-10" animation="fadeUp">
-          <h2 className="text-5xl md:text-6xl font-serif font-bold mb-8 tracking-tight">
-            Reserve Your Experience
-          </h2>
-          <p className="text-xl mb-12 font-light tracking-wide text-primary-foreground/80">Experience the hallmark of business luxury at Thane's most refined address.</p>
-          <Link
-            href="/rooms/1"
-            className="bg-primary-foreground text-primary px-16 py-6 rounded-none text-sm font-bold hover:bg-white transition-all duration-500 shadow-2xl hover:-translate-y-2 uppercase tracking-[0.3em] inline-block"
-          >
-            Start Your Stay
-          </Link>
-        </ScrollAnimationWrapper>
-      </section>
     </main>
   );
 }

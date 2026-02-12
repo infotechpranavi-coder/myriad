@@ -81,14 +81,6 @@ export function RoomHero() {
                                             <p className="text-lg md:text-xl text-white/80 mb-10 leading-relaxed font-light">
                                                 {slide.description}
                                             </p>
-                                            <div className="flex flex-wrap gap-4">
-                                                <button className="bg-primary text-primary-foreground px-8 py-4 text-xs font-bold hover:bg-primary/90 transition-all duration-300 uppercase tracking-widest">
-                                                    Explore Rooms
-                                                </button>
-                                                <button className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 text-xs font-bold hover:bg-white/20 transition-all duration-300 uppercase tracking-widest">
-                                                    View Gallery
-                                                </button>
-                                            </div>
                                         </ScrollAnimationWrapper>
                                     </div>
                                 </div>
