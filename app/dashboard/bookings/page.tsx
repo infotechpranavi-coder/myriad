@@ -589,6 +589,7 @@ export default function BookingsPage() {
               </div>
             </div>
           )}
+          </div>
         </DialogContent>
       </Dialog>
 
