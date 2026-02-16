@@ -63,6 +63,8 @@ export default function RoomsManagementPage() {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [addons, setAddons] = useState<Array<{ name: string; price: string }>>([]);
   const [goibiboOffers, setGoibiboOffers] = useState<Array<{ title: string; description: string }>>([]);
+  const [menuHighlights, setMenuHighlights] = useState<Array<{ name: string; price: string; images: string[] }>>([]);
+  const [uploadingMenuImage, setUploadingMenuImage] = useState<{ itemIndex: number; imageIndex?: number } | null>(null);
 
   useEffect(() => {
     fetchRooms();
@@ -226,6 +228,22 @@ export default function RoomsManagementPage() {
     } else {
       setGoibiboOffers([]);
     }
+    // Convert menuHighlights to array format
+    if (room.menuHighlights) {
+      const items: Array<{ name: string; price: string; images: string[] }> = [];
+      Object.values(room.menuHighlights).forEach((categoryItems: any) => {
+        categoryItems.forEach((item: any) => {
+          items.push({ 
+            name: item.name || '', 
+            price: item.price?.toString() || '', 
+            images: item.images || [] 
+          });
+        });
+      });
+      setMenuHighlights(items);
+    } else {
+      setMenuHighlights([]);
+    }
     setIsDialogOpen(true);
   };
 
@@ -249,6 +267,7 @@ export default function RoomsManagementPage() {
     setNewImageUrl('');
     setAddons([]);
     setGoibiboOffers([]);
+    setMenuHighlights([]);
     setIsDialogOpen(true);
   };
 
@@ -291,6 +310,106 @@ export default function RoomsManagementPage() {
     setGoibiboOffers(updated);
   };
 
+  const handleAddMenuHighlight = () => {
+    setMenuHighlights([...menuHighlights, { name: '', price: '', images: [] }]);
+  };
+
+  const handleRemoveMenuHighlight = (index: number) => {
+    setMenuHighlights(menuHighlights.filter((_, i) => i !== index));
+  };
+
+  const handleMenuHighlightChange = (index: number, field: 'name' | 'price', value: string) => {
+    const updated = [...menuHighlights];
+    updated[index] = { ...updated[index], [field]: value };
+    setMenuHighlights(updated);
+  };
+
+  const handleMenuImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, itemIndex: number, imageIndex?: number) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingMenuImage({ itemIndex, imageIndex });
+    
+    try {
+      const uploadPromises: Promise<string>[] = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          continue;
+        }
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          continue;
+        }
+
+        // Upload to Cloudinary
+        const uploadPromise = (async () => {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
+
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: uploadFormData,
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || 'Upload failed');
+            }
+
+            const data = await response.json();
+            return data.url;
+          } catch (error) {
+            console.error(`Failed to upload image ${i + 1}:`, error);
+            throw error;
+          }
+        })();
+
+        uploadPromises.push(uploadPromise);
+      }
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      
+      if (uploadedUrls.length > 0) {
+        const updated = [...menuHighlights];
+        if (imageIndex !== undefined) {
+          // Replace existing image
+          updated[itemIndex].images[imageIndex] = uploadedUrls[0];
+        } else {
+          // Add new images
+          updated[itemIndex].images = [...updated[itemIndex].images, ...uploadedUrls];
+        }
+        setMenuHighlights(updated);
+        toast({
+          title: 'Success',
+          description: `${uploadedUrls.length} image(s) uploaded successfully`,
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to upload images',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingMenuImage(null);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveMenuImage = (itemIndex: number, imageIndex: number) => {
+    const updated = [...menuHighlights];
+    updated[itemIndex].images = updated[itemIndex].images.filter((_, i) => i !== imageIndex);
+    setMenuHighlights(updated);
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -325,6 +444,24 @@ export default function RoomsManagementPage() {
         }
       }
 
+      // Convert menuHighlights array to proper format
+      let menuHighlightsData = undefined;
+      if (menuHighlights.length > 0) {
+        menuHighlightsData = {
+          highlights: menuHighlights
+            .filter((item) => item.name.trim() && item.price.trim())
+            .map((item) => ({
+              name: item.name.trim(),
+              price: item.price.trim(),
+              description: '',
+              images: item.images.filter(Boolean),
+            })),
+        };
+        if (menuHighlightsData.highlights.length === 0) {
+          menuHighlightsData = undefined;
+        }
+      }
+
       const basePrice = formData.basePrice ? parseFloat(formData.basePrice) : 0;
       const taxes = formData.taxes ? parseFloat(formData.taxes) : 0;
       const serviceFees = formData.serviceFees ? parseFloat(formData.serviceFees) : 0;
@@ -348,6 +485,7 @@ export default function RoomsManagementPage() {
         },
         addons: addonsData,
         goibiboOffers: goibiboOffersData,
+        menuHighlights: menuHighlightsData,
         // Legacy fields for backward compatibility
         name: formData.title,
         description: formData.about,
@@ -850,6 +988,157 @@ export default function RoomsManagementPage() {
                   </div>
                 )}
               </div>
+
+              {/* Menu Highlights */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium">Menu Highlights</label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddMenuHighlight}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Menu Item
+                  </Button>
+                </div>
+                {menuHighlights.length === 0 ? (
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/20">
+                    <p className="text-sm text-muted-foreground">
+                      No menu items added yet. Click "Add Menu Item" to add items.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {menuHighlights.map((item, itemIndex) => (
+                      <div key={itemIndex} className="border rounded-lg p-4 bg-muted/30">
+                        <div className="flex gap-2 items-start mb-3">
+                          <div className="flex-1 grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">
+                                Dish Name
+                              </label>
+                              <Input
+                                value={item.name}
+                                onChange={(e) =>
+                                  handleMenuHighlightChange(itemIndex, 'name', e.target.value)
+                                }
+                                placeholder="e.g., Grilled Chicken"
+                                className="text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">
+                                Price
+                              </label>
+                              <Input
+                                type="number"
+                                value={item.price}
+                                onChange={(e) =>
+                                  handleMenuHighlightChange(itemIndex, 'price', e.target.value)
+                                }
+                                placeholder="e.g., 500"
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMenuHighlight(itemIndex)}
+                            className="mt-6"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Menu Images */}
+                        <div className="mt-3">
+                          <label className="text-xs text-muted-foreground mb-2 block">
+                            Menu Images (Multiple images allowed)
+                          </label>
+                          <div className="space-y-2">
+                            {/* Upload Button */}
+                            <div>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => handleMenuImageUpload(e, itemIndex)}
+                                disabled={uploadingMenuImage?.itemIndex === itemIndex}
+                                className="cursor-pointer h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                              />
+                              {uploadingMenuImage?.itemIndex === itemIndex && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Uploading images...
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Image Preview Grid */}
+                            {item.images.length > 0 && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                                {item.images.map((imageUrl, imageIndex) => (
+                                  <div
+                                    key={imageIndex}
+                                    className="relative group border rounded-lg overflow-hidden bg-background"
+                                  >
+                                    <div className="aspect-video relative">
+                                      {imageUrl.startsWith('http') || imageUrl.startsWith('/') ? (
+                                        imageUrl.startsWith('/') ? (
+                                          <Image
+                                            src={imageUrl}
+                                            alt={`Menu image ${imageIndex + 1}`}
+                                            fill
+                                            className="object-cover"
+                                            onError={(e) => {
+                                              const target = e.target as HTMLImageElement;
+                                              target.style.display = 'none';
+                                            }}
+                                          />
+                                        ) : (
+                                          <img
+                                            src={imageUrl}
+                                            alt={`Menu image ${imageIndex + 1}`}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              const target = e.target as HTMLImageElement;
+                                              target.style.display = 'none';
+                                            }}
+                                          />
+                                        )
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                                          <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="destructive"
+                                        className="h-6 w-6 p-0"
+                                        onClick={() => handleRemoveMenuImage(itemIndex, imageIndex)}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <Button onClick={handleSave} className="w-full" disabled={saving}>
                 {saving ? (
                   <>

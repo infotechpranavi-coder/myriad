@@ -94,15 +94,6 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                 ))}
-                <div className="border-t border-primary/10 my-1" />
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/restaurants"
-                    className="cursor-pointer font-serif font-semibold text-primary py-2.5 px-4 hover:bg-primary/5 transition-colors duration-200"
-                  >
-                    View All →
-                  </Link>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -179,17 +170,6 @@ export default function Header() {
                       {restaurant.name}
                     </Link>
                   ))}
-                  <div className="border-t border-primary/10 my-2" />
-                  <Link
-                    href="/restaurants"
-                    className="block px-4 py-2 text-primary font-serif font-semibold hover:bg-primary/5 rounded transition-all duration-200 text-sm"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsRestaurantMenuOpen(false);
-                    }}
-                  >
-                    View All →
-                  </Link>
                 </div>
               )}
             </div>

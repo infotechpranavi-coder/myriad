@@ -25,6 +25,14 @@ export interface Room {
     description: string;
     discount?: string;
   }>;
+  menuHighlights?: {
+    highlights: Array<{
+      name: string;
+      price: string;
+      description?: string;
+      images?: string[];
+    }>;
+  };
   // Legacy fields for backward compatibility
   name?: string;
   description?: string;

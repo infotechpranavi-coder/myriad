@@ -23,6 +23,15 @@ import {
   DialogDescription,
   DialogHeader,
 } from '@/components/ui/dialog';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import React from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function RestaurantDetailPage() {
@@ -72,21 +81,53 @@ export default function RestaurantDetailPage() {
   const { toast } = useToast();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [selectedMenuImageIndex, setSelectedMenuImageIndex] = useState<number | null>(null);
 
-  // Gallery images for Urban Dhaba
+  // Autoplay plugin for carousel
+  const plugin = React.useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: false })
+  );
+
+  // Get all menu images from menu.main array
+  const getMenuImages = () => {
+    if (!restaurant || !restaurant.menu) return [];
+    
+    const allMenuImages: string[] = [];
+    
+    // Check if menu.main exists and has items
+    if (restaurant.menu.main && Array.isArray(restaurant.menu.main)) {
+      restaurant.menu.main.forEach((item: any) => {
+        if (item.images && Array.isArray(item.images)) {
+          item.images.forEach((img: string) => {
+            if (img && img.trim() && !allMenuImages.includes(img)) {
+              allMenuImages.push(img);
+            }
+          });
+        }
+      });
+    }
+    
+    return allMenuImages;
+  };
+
+  const menuImages = getMenuImages();
+
+  // Gallery images - use restaurant gallery if available, otherwise use main image
   const getGalleryImages = () => {
     if (!restaurant) return [];
-    if (restaurant.slug === 'urban-dhaba') {
-      return [
-        restaurant.image,
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=90&fit=crop',
-        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=90&fit=crop',
-        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=90&fit=crop',
-        'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=1200&q=90&fit=crop',
-        'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&q=90&fit=crop',
-      ];
+    
+    // If restaurant has a gallery array with images, use it
+    if (restaurant.gallery && Array.isArray(restaurant.gallery) && restaurant.gallery.length > 0) {
+      // Filter out empty/null values and include main image if not already in gallery
+      const galleryImages = [...restaurant.gallery].filter(img => img && img.trim());
+      if (restaurant.image && !galleryImages.includes(restaurant.image)) {
+        galleryImages.unshift(restaurant.image);
+      }
+      return galleryImages;
     }
-    return [restaurant.image];
+    
+    // Fallback: use main image
+    return restaurant.image ? [restaurant.image] : [];
   };
 
   const galleryImages = getGalleryImages();
@@ -403,26 +444,105 @@ export default function RestaurantDetailPage() {
             {/* Menu */}
             <section id="menu" className="bg-card rounded-lg border p-6 scroll-mt-24">
               <h2 className="text-2xl font-serif font-bold text-primary mb-6">Menu Highlights</h2>
-              {Object.entries(restaurant.menu).map(([category, items]) => (
-                <div key={category} className="mb-8 last:mb-0">
-                  <h3 className="text-xl font-semibold text-foreground mb-4 capitalize">
-                    {category}
-                  </h3>
-                  <div className="space-y-4">
-                    {items.map((item: any, index: number) => (
-                      <div key={index} className="flex justify-between items-start gap-4 pb-4 border-b last:border-0">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-foreground mb-1">{item.name}</h4>
-                          <p className="text-sm text-foreground/70">{item.description}</p>
-                        </div>
-                        <span className="font-semibold text-primary whitespace-nowrap">
-                          {item.price}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+              
+              {/* Menu Images Carousel */}
+              {menuImages.length > 0 ? (
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold text-foreground mb-4">Menu</h3>
+                  <Carousel
+                    opts={{
+                      align: 'start',
+                      loop: true,
+                    }}
+                    plugins={[plugin.current]}
+                    className="w-full"
+                  >
+                    <CarouselContent className="-ml-2 md:-ml-4">
+                      {menuImages.map((imageUrl: string, index: number) => (
+                        <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                          <div 
+                            className="relative aspect-video rounded-lg overflow-hidden border border-border group cursor-pointer"
+                            onClick={() => setSelectedMenuImageIndex(index)}
+                          >
+                            {imageUrl.startsWith('http') || imageUrl.startsWith('/') ? (
+                              imageUrl.startsWith('/') ? (
+                                <Image
+                                  src={imageUrl}
+                                  alt={`Menu item ${index + 1}`}
+                                  fill
+                                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <img
+                                  src={imageUrl}
+                                  alt={`Menu item ${index + 1}`}
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              )
+                            ) : null}
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-2 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
+                    <CarouselNext className="right-2 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
+                  </Carousel>
                 </div>
-              ))}
+              ) : null}
+
+              {/* Legacy Menu Items (if they have name/price) */}
+              {restaurant.menu && Object.entries(restaurant.menu).some(([category, items]) => {
+                const itemsArray = items as any[];
+                return itemsArray.some((item: any) => item.name || item.price);
+              }) && (
+                <>
+                  {Object.entries(restaurant.menu).map(([category, items]) => {
+                    const itemsArray = items as any[];
+                    const hasNameOrPrice = itemsArray.some((item: any) => item.name || item.price);
+                    
+                    if (!hasNameOrPrice) return null;
+                    
+                    return (
+                      <div key={category} className="mb-8 last:mb-0">
+                        <h3 className="text-xl font-semibold text-foreground mb-4 capitalize">
+                          {category}
+                        </h3>
+                        <div className="space-y-4">
+                          {itemsArray.map((item: any, index: number) => {
+                            if (!item.name && !item.price) return null;
+                            
+                            return (
+                              <div key={index} className="flex justify-between items-start gap-4 pb-4 border-b last:border-0">
+                                <div className="flex-1">
+                                  {item.name && (
+                                    <h4 className="font-semibold text-foreground mb-1">{item.name}</h4>
+                                  )}
+                                  {item.description && (
+                                    <p className="text-sm text-foreground/70">{item.description}</p>
+                                  )}
+                                </div>
+                                {item.price && (
+                                  <span className="font-semibold text-primary whitespace-nowrap">
+                                    {item.price}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </section>
           </div>
 
@@ -544,8 +664,8 @@ export default function RestaurantDetailPage() {
         </div>
       </div>
 
-      {/* Gallery Section - Only for Urban Dhaba */}
-      {restaurant.slug === 'urban-dhaba' && (
+      {/* Gallery Section */}
+      {galleryImages.length > 0 && (
         <section className="bg-muted/30 py-16 px-4">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-8 text-center">
@@ -563,6 +683,7 @@ export default function RestaurantDetailPage() {
                     alt={`${restaurant.name} - Image ${index + 1}`}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    unoptimized={!img.includes('res.cloudinary.com')}
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                 </div>
@@ -633,6 +754,84 @@ export default function RestaurantDetailPage() {
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Menu Image Preview Modal */}
+      <Dialog
+        open={selectedMenuImageIndex !== null}
+        onOpenChange={(open) => !open && setSelectedMenuImageIndex(null)}
+      >
+        <DialogContent className="max-w-7xl w-full h-[90vh] p-0 bg-black/95 border-none">
+          <DialogTitle className="sr-only">
+            {selectedMenuImageIndex !== null
+              ? `${restaurant?.name || 'Restaurant'} - Menu Image ${selectedMenuImageIndex + 1} of ${menuImages.length}`
+              : 'Menu Image Preview'}
+          </DialogTitle>
+          {selectedMenuImageIndex !== null && menuImages[selectedMenuImageIndex] && (
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Close Button */}
+              <DialogClose className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 rounded-full p-2 transition-colors">
+                <X size={24} />
+              </DialogClose>
+
+              {/* Previous Button */}
+              {selectedMenuImageIndex > 0 && (
+                <button
+                  onClick={() => setSelectedMenuImageIndex(selectedMenuImageIndex - 1)}
+                  className="absolute left-4 z-50 text-white hover:bg-white/20 rounded-full p-3 transition-colors"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft size={32} />
+                </button>
+              )}
+
+              {/* Next Button */}
+              {selectedMenuImageIndex < menuImages.length - 1 && (
+                <button
+                  onClick={() => setSelectedMenuImageIndex(selectedMenuImageIndex + 1)}
+                  className="absolute right-4 z-50 text-white hover:bg-white/20 rounded-full p-3 transition-colors"
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={32} />
+                </button>
+              )}
+
+              {/* Image */}
+              <div className="relative w-full h-full flex items-center justify-center p-8">
+                {menuImages[selectedMenuImageIndex].startsWith('http') || menuImages[selectedMenuImageIndex].startsWith('/') ? (
+                  menuImages[selectedMenuImageIndex].startsWith('/') ? (
+                    <Image
+                      src={menuImages[selectedMenuImageIndex]}
+                      alt={`Menu image ${selectedMenuImageIndex + 1}`}
+                      width={1200}
+                      height={800}
+                      className="max-w-full max-h-full object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={menuImages[selectedMenuImageIndex]}
+                      alt={`Menu image ${selectedMenuImageIndex + 1}`}
+                      className="max-w-full max-h-full object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  )
+                ) : null}
+              </div>
+
+              {/* Image Counter */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+                {selectedMenuImageIndex + 1} / {menuImages.length}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

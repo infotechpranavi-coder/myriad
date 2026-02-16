@@ -17,6 +17,8 @@ interface PricingSidebarProps {
         price: number
         description?: string
     }>
+    selectedAddons?: Set<number>
+    onAddonToggle?: (index: number) => void
     goibiboOffers?: Array<{
         title: string
         description: string
@@ -24,9 +26,15 @@ interface PricingSidebarProps {
     }>
 }
 
-export function PricingSidebar({ roomName, price, pricePer24Hours, days, hours, nights, taxes = 0, serviceFees = 0, addons = [], goibiboOffers = [] }: PricingSidebarProps) {
+export function PricingSidebar({ roomName, price, pricePer24Hours, days, hours, nights, taxes = 0, serviceFees = 0, addons = [], selectedAddons = new Set(), onAddonToggle, goibiboOffers = [] }: PricingSidebarProps) {
     const totalTaxesAndFees = taxes + serviceFees;
-    const total = price + totalTaxesAndFees;
+    
+    // Calculate selected addons total
+    const selectedAddonsTotal = Array.from(selectedAddons).reduce((sum, index) => {
+        return sum + (addons[index]?.price || 0);
+    }, 0);
+    
+    const total = price + totalTaxesAndFees + selectedAddonsTotal;
 
     return (
         <div className="sticky top-24 space-y-4">
@@ -61,6 +69,19 @@ export function PricingSidebar({ roomName, price, pricePer24Hours, days, hours, 
                             )}
                         </div>
 
+                        {selectedAddonsTotal > 0 && (
+                            <div className="pt-2 border-t border-border">
+                                <div className="flex items-baseline justify-between mb-2">
+                                    <span className="text-sm font-semibold text-foreground/80">
+                                        Selected Addons
+                                    </span>
+                                    <span className="text-base font-bold text-foreground">
+                                        ₹{selectedAddonsTotal.toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="pt-4 border-t border-border">
                             <div className="flex items-baseline justify-between">
                                 <span className="text-base font-bold text-foreground">
@@ -90,24 +111,34 @@ export function PricingSidebar({ roomName, price, pricePer24Hours, days, hours, 
 
                     <div className="space-y-4">
                         {addons.length > 0 ? (
-                            addons.map((addon, index) => (
-                                <div key={index} className="border border-border rounded-sm p-4">
-                                    <div className="flex items-start justify-between mb-2">
-                                        <div>
-                                            <p className="text-sm font-semibold text-foreground mb-1">
-                                                Add <span className="font-bold">{addon.name}</span> for ₹{addon.price.toLocaleString()} for all guests
-                                            </p>
-                                            {addon.description && (
-                                                <p className="text-xs text-foreground/50">{addon.description}</p>
-                                            )}
-                                            <p className="text-xs text-foreground/50 mt-1">Includes taxes and fees</p>
+                            addons.map((addon, index) => {
+                                const isSelected = selectedAddons.has(index);
+                                return (
+                                    <div key={index} className={`border rounded-sm p-4 ${isSelected ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                                        <div className="flex items-start justify-between mb-2">
+                                            <div>
+                                                <p className="text-sm font-semibold text-foreground mb-1">
+                                                    Add <span className="font-bold">{addon.name}</span> for ₹{addon.price.toLocaleString()} for all guests
+                                                </p>
+                                                {addon.description && (
+                                                    <p className="text-xs text-foreground/50">{addon.description}</p>
+                                                )}
+                                                <p className="text-xs text-foreground/50 mt-1">Includes taxes and fees</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => onAddonToggle?.(index)}
+                                                className={`text-sm font-bold shrink-0 ml-4 px-3 py-1 rounded transition-colors ${
+                                                    isSelected 
+                                                        ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                                                        : 'text-primary hover:underline'
+                                                }`}
+                                            >
+                                                {isSelected ? 'REMOVE' : 'APPLY'}
+                                            </button>
                                         </div>
-                                        <button className="text-sm font-bold text-primary hover:underline shrink-0 ml-4">
-                                            APPLY
-                                        </button>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="border border-border rounded-sm p-4">
                                 <div className="flex items-start justify-between mb-2">

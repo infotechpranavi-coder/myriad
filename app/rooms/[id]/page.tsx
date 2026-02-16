@@ -106,6 +106,7 @@ export default function RoomDetailPage() {
     });
     const [submitting, setSubmitting] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [selectedAddons, setSelectedAddons] = useState<Set<number>>(new Set());
     const [bookingDetails, setBookingDetails] = useState<{
         roomName: string;
         checkIn: Date | undefined;
@@ -189,6 +190,14 @@ export default function RoomDetailPage() {
     // If less than 24 hours, charge for 1 day (24-hour rate)
     // If more than 24 hours, calculate proportionally
     const basePrice = days < 1 ? pricePer24Hours : pricePer24Hours * days;
+
+    // Calculate total addon price from selected addons
+    const selectedAddonsTotal = Array.from(selectedAddons).reduce((sum, index) => {
+        return sum + (addons[index]?.price || 0);
+    }, 0);
+
+    // Calculate final total including addons
+    const finalTotal = basePrice + taxes + serviceFees + selectedAddonsTotal;
 
     return (
         <main className="min-h-screen bg-muted/20">
@@ -394,14 +403,19 @@ export default function RoomDetailPage() {
                                     <User size={14} /> 2 Adults
                                 </p>
                                 <p className="text-sm mt-1">Room Only</p>
-                                <p className="text-sm text-green-600">
-                                    Free Cancellation before 27 Feb 11:59 AM
-                                </p>
+                                <div className="text-sm mt-2 space-y-1">
+                                    <p className="text-red-600 font-medium">
+                                        60% Non-Refundable
+                                    </p>
+                                    <p className="text-green-600">
+                                        40% Refundable in 24 to 48 hours
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="text-right text-sm">
                                 <p className="flex items-center gap-1 justify-end text-green-600">
-                                    <CheckCircle2 size={14} /> Free Cancellation
+                                    <CheckCircle2 size={14} /> Partial Refund Available
                                 </p>
                                 <p>Book @ ₹0 available</p>
                             </div>
@@ -604,7 +618,11 @@ export default function RoomDetailPage() {
                                         guests: '2',
                                         nights: nights,
                                         hours: hours,
-                                        totalAmount: basePrice + taxes + serviceFees,
+                                        selectedAddons: Array.from(selectedAddons).map(index => ({
+                                            name: addons[index]?.name || '',
+                                            price: addons[index]?.price || 0
+                                        })),
+                                        totalAmount: finalTotal,
                                     };
 
                                     const response = await fetch('/api/bookings', {
@@ -624,7 +642,7 @@ export default function RoomDetailPage() {
                                             nights: nights,
                                             hours: hours,
                                             guests: '2',
-                                            totalAmount: basePrice + taxes + serviceFees,
+                                            totalAmount: finalTotal,
                                         });
                                         // Reset form
                                         setGuestForm({
@@ -730,6 +748,18 @@ export default function RoomDetailPage() {
                         taxes={taxes}
                         serviceFees={serviceFees}
                         addons={addons}
+                        selectedAddons={selectedAddons}
+                        onAddonToggle={(index) => {
+                            setSelectedAddons(prev => {
+                                const newSet = new Set(prev);
+                                if (newSet.has(index)) {
+                                    newSet.delete(index);
+                                } else {
+                                    newSet.add(index);
+                                }
+                                return newSet;
+                            });
+                        }}
                         goibiboOffers={goibiboOffers}
                     />
                 </div>

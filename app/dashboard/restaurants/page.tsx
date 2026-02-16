@@ -61,10 +61,11 @@ export default function RestaurantsManagementPage() {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [bookings, setBookings] = useState<RestaurantBooking[]>([]);
   const [viewingBooking, setViewingBooking] = useState<RestaurantBooking | null>(null);
-  const [menuItems, setMenuItems] = useState<Array<{ name: string; price: string }>>([]);
-  const [mainMenuItems, setMainMenuItems] = useState<Array<{ name: string; price: string }>>([]);
+  const [menuItems, setMenuItems] = useState<Array<{ name: string; price: string; images: string[] }>>([]);
+  const [mainMenuItems, setMainMenuItems] = useState<Array<{ images: string[] }>>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingMenuImage, setUploadingMenuImage] = useState<{ type: 'main' | 'highlight'; itemIndex: number } | null>(null);
 
   useEffect(() => {
     fetchRestaurants();
@@ -138,27 +139,29 @@ export default function RestaurantsManagementPage() {
   const handleEdit = (restaurant: Restaurant) => {
     setEditingRestaurant(restaurant);
     setFormData({
-      name: restaurant.name,
-      cuisine: restaurant.cuisine,
-      description: restaurant.description,
+      name: restaurant.name || '',
+      cuisine: restaurant.cuisine || '',
+      description: restaurant.description || '',
       about: restaurant.about || '',
-      image: restaurant.image,
-      slug: restaurant.slug,
-      openingHours: restaurant.openingHours,
-      capacity: restaurant.capacity,
-      address: restaurant.address,
+      image: restaurant.image || '',
+      slug: restaurant.slug || '',
+      openingHours: restaurant.openingHours || '',
+      capacity: restaurant.capacity || '',
+      address: restaurant.address || '',
       location: restaurant.location || '',
-      highlights: restaurant.highlights.join(', '),
+      highlights: restaurant.highlights ? restaurant.highlights.join(', ') : '',
       menu: '', // No longer used
       menuHighlights: '', // No longer used
     });
     setImageUrls(restaurant.gallery || []);
     // Convert menu to array format
     if (restaurant.menu) {
-      const items: Array<{ name: string; price: string }> = [];
+      const items: Array<{ images: string[] }> = [];
       Object.values(restaurant.menu).forEach((categoryItems) => {
-        categoryItems.forEach((item) => {
-          items.push({ name: item.name || '', price: item.price || '' });
+        categoryItems.forEach((item: any) => {
+          items.push({ 
+            images: item.images || [] 
+          });
         });
       });
       setMainMenuItems(items);
@@ -167,10 +170,14 @@ export default function RestaurantsManagementPage() {
     }
     // Convert menuHighlights to array format
     if (restaurant.menuHighlights) {
-      const items: Array<{ name: string; price: string }> = [];
+      const items: Array<{ name: string; price: string; images: string[] }> = [];
       Object.values(restaurant.menuHighlights).forEach((categoryItems) => {
-        categoryItems.forEach((item) => {
-          items.push({ name: item.name || '', price: item.price || '' });
+        categoryItems.forEach((item: any) => {
+          items.push({ 
+            name: item.name || '', 
+            price: item.price || '', 
+            images: item.images || [] 
+          });
         });
       });
       setMenuItems(items);
@@ -238,12 +245,12 @@ export default function RestaurantsManagementPage() {
     setUploadingImage(true);
     try {
       // Upload to Cloudinary
-      const formData = new FormData();
-      formData.append('file', file);
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
 
       if (!response.ok) {
@@ -252,7 +259,8 @@ export default function RestaurantsManagementPage() {
       }
 
       const data = await response.json();
-      setFormData({ ...formData, image: data.url });
+      // Use functional update to preserve existing formData state
+      setFormData((prevFormData) => ({ ...prevFormData, image: data.url }));
       setUploadingImage(false);
       toast({
         title: 'Success',
@@ -294,12 +302,12 @@ export default function RestaurantsManagementPage() {
         // Upload to Cloudinary
         const uploadPromise = (async () => {
           try {
-            const formData = new FormData();
-            formData.append('file', file);
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
 
             const response = await fetch('/api/upload', {
               method: 'POST',
-              body: formData,
+              body: uploadFormData,
             });
 
             if (!response.ok) {
@@ -352,7 +360,7 @@ export default function RestaurantsManagementPage() {
   };
 
   const handleAddMenuItem = () => {
-    setMenuItems([...menuItems, { name: '', price: '' }]);
+    setMenuItems([...menuItems, { name: '', price: '', images: [] }]);
   };
 
   const handleRemoveMenuItem = (index: number) => {
@@ -366,16 +374,90 @@ export default function RestaurantsManagementPage() {
   };
 
   const handleAddMainMenuItem = () => {
-    setMainMenuItems([...mainMenuItems, { name: '', price: '' }]);
+    setMainMenuItems([...mainMenuItems, { images: [] }]);
   };
 
   const handleRemoveMainMenuItem = (index: number) => {
     setMainMenuItems(mainMenuItems.filter((_, i) => i !== index));
   };
 
-  const handleMainMenuItemChange = (index: number, field: 'name' | 'price', value: string) => {
+  const handleMainMenuImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, itemIndex: number) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingMenuImage({ type: 'main', itemIndex });
+    
+    try {
+      const uploadPromises: Promise<string>[] = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          continue;
+        }
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          continue;
+        }
+
+        // Upload to Cloudinary
+        const uploadPromise = (async () => {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
+
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: uploadFormData,
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || 'Upload failed');
+            }
+
+            const data = await response.json();
+            return data.url;
+          } catch (error) {
+            console.error(`Failed to upload image ${i + 1}:`, error);
+            throw error;
+          }
+        })();
+
+        uploadPromises.push(uploadPromise);
+      }
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      
+      if (uploadedUrls.length > 0) {
+        const updated = [...mainMenuItems];
+        updated[itemIndex].images = [...updated[itemIndex].images, ...uploadedUrls];
+        setMainMenuItems(updated);
+        toast({
+          title: 'Success',
+          description: `${uploadedUrls.length} image(s) uploaded successfully`,
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to upload images',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingMenuImage(null);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveMainMenuImage = (itemIndex: number, imageIndex: number) => {
     const updated = [...mainMenuItems];
-    updated[index] = { ...updated[index], [field]: value };
+    updated[itemIndex].images = updated[itemIndex].images.filter((_, i) => i !== imageIndex);
     setMainMenuItems(updated);
   };
 
@@ -388,9 +470,10 @@ export default function RestaurantsManagementPage() {
       if (mainMenuItems.length > 0) {
         menuData = {
           main: mainMenuItems.map((item) => ({
-            name: item.name,
-            price: item.price,
-            description: '', // Empty description as user only provides name and price
+            name: '',
+            price: '',
+            description: '',
+            images: item.images.filter(Boolean),
           })),
         };
       }
@@ -403,8 +486,20 @@ export default function RestaurantsManagementPage() {
             name: item.name,
             price: item.price,
             description: '', // Empty description as user only provides name and price
+            images: item.images.filter(Boolean),
           })),
         };
+      }
+
+      // Validate required fields
+      if (!formData.name || !formData.name.trim()) {
+        toast({
+          title: 'Error',
+          description: 'Restaurant name is required',
+          variant: 'destructive',
+        });
+        setSaving(false);
+        return;
       }
 
       const restaurantData = {
@@ -414,12 +509,12 @@ export default function RestaurantsManagementPage() {
         description: formData.description,
         about: formData.about || undefined,
         image: formData.image,
-        slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: formData.slug || (formData.name ? formData.name.toLowerCase().replace(/\s+/g, '-') : ''),
         openingHours: formData.openingHours,
         capacity: formData.capacity,
         address: formData.address,
         location: formData.location || undefined,
-        highlights: formData.highlights.split(',').map((h) => h.trim()).filter(Boolean),
+        highlights: formData.highlights ? formData.highlights.split(',').map((h) => h.trim()).filter(Boolean) : [],
         menu: menuData,
         menuHighlights: menuHighlightsData,
         gallery: imageUrls.filter(Boolean),
@@ -445,6 +540,27 @@ export default function RestaurantsManagementPage() {
             ? 'Restaurant updated successfully' 
             : 'Restaurant created successfully',
         });
+        // Reset form and close dialog
+        setEditingRestaurant(null);
+        setFormData({
+          name: '',
+          cuisine: '',
+          description: '',
+          about: '',
+          image: '',
+          slug: '',
+          openingHours: '',
+          capacity: '',
+          address: '',
+          location: '',
+          highlights: '',
+          menu: '',
+          menuHighlights: '',
+        });
+        setImageUrls([]);
+        setNewImageUrl('');
+        setMenuItems([]);
+        setMainMenuItems([]);
         setIsDialogOpen(false);
         fetchRestaurants();
       } else {
@@ -590,10 +706,28 @@ export default function RestaurantsManagementPage() {
           open={isDialogOpen}
           onOpenChange={(open) => {
             setIsDialogOpen(open);
-            if (!open) {
-              // Reset gallery when dialog closes
+            if (!open && !saving) {
+              // Reset form when dialog closes (only if not saving)
+              setEditingRestaurant(null);
+              setFormData({
+                name: '',
+                cuisine: '',
+                description: '',
+                about: '',
+                image: '',
+                slug: '',
+                openingHours: '',
+                capacity: '',
+                address: '',
+                location: '',
+                highlights: '',
+                menu: '',
+                menuHighlights: '',
+              });
               setImageUrls([]);
               setNewImageUrl('');
+              setMenuItems([]);
+              setMainMenuItems([]);
             }
           }}
           modal={true}
@@ -641,7 +775,7 @@ export default function RestaurantsManagementPage() {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Restaurant Name</label>
                   <Input
-                    value={formData.name}
+                    value={formData.name || ''}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Urban Dhaba"
                   />
@@ -649,7 +783,7 @@ export default function RestaurantsManagementPage() {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Cuisine Type</label>
                   <Input
-                    value={formData.cuisine}
+                    value={formData.cuisine || ''}
                     onChange={(e) => setFormData({ ...formData, cuisine: e.target.value })}
                     placeholder="Contemporary Indian"
                   />
@@ -658,7 +792,7 @@ export default function RestaurantsManagementPage() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Slug</label>
                 <Input
-                  value={formData.slug}
+                  value={formData.slug || ''}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                   placeholder="urban-dhaba"
                 />
@@ -666,7 +800,7 @@ export default function RestaurantsManagementPage() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Description</label>
                 <Textarea
-                  value={formData.description}
+                  value={formData.description || ''}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Restaurant description..."
                   rows={4}
@@ -675,7 +809,7 @@ export default function RestaurantsManagementPage() {
               <div>
                 <label className="text-sm font-medium mb-2 block">About</label>
                 <Textarea
-                  value={formData.about}
+                  value={formData.about || ''}
                   onChange={(e) => setFormData({ ...formData, about: e.target.value })}
                   placeholder="Detailed information about the restaurant..."
                   rows={4}
@@ -701,7 +835,7 @@ export default function RestaurantsManagementPage() {
                     Or enter image URL:
                   </div>
                   <Input
-                    value={formData.image}
+                    value={formData.image || ''}
                     onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                     placeholder="https://images.unsplash.com/... or upload above"
                   />
@@ -727,7 +861,7 @@ export default function RestaurantsManagementPage() {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Opening Hours</label>
                   <Input
-                    value={formData.openingHours}
+                    value={formData.openingHours || ''}
                     onChange={(e) =>
                       setFormData({ ...formData, openingHours: e.target.value })
                     }
@@ -737,7 +871,7 @@ export default function RestaurantsManagementPage() {
                 <div>
                   <label className="text-sm font-medium mb-2 block">Capacity</label>
                   <Input
-                    value={formData.capacity}
+                    value={formData.capacity || ''}
                     onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                     placeholder="Up to 60 guests"
                   />
@@ -746,7 +880,7 @@ export default function RestaurantsManagementPage() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Address</label>
                 <Input
-                  value={formData.address}
+                  value={formData.address || ''}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="Ground Floor, The Myriad Hotel"
                 />
@@ -754,7 +888,7 @@ export default function RestaurantsManagementPage() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Location</label>
                 <Input
-                  value={formData.location}
+                  value={formData.location || ''}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   placeholder="Floor 2, Wing A"
                 />
@@ -764,7 +898,7 @@ export default function RestaurantsManagementPage() {
                   Highlights (comma-separated)
                 </label>
                 <Input
-                  value={formData.highlights}
+                  value={formData.highlights || ''}
                   onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
                   placeholder="Award-winning chef, Tandoori specialties"
                 />
@@ -887,7 +1021,7 @@ export default function RestaurantsManagementPage() {
                   )}
                 </div>
               </div>
-              {/* Menu - Dish Name and Price */}
+              {/* Menu - Images Only */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium">Menu</label>
@@ -898,56 +1032,112 @@ export default function RestaurantsManagementPage() {
                     onClick={handleAddMainMenuItem}
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Dish
+                    Add Menu Item
                   </Button>
                 </div>
                 {mainMenuItems.length === 0 ? (
                   <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/20">
                     <p className="text-sm text-muted-foreground">
-                      No dishes added yet. Click "Add Dish" to add menu items.
+                      No menu items added yet. Click "Add Menu Item" to add menu images.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {mainMenuItems.map((item, index) => (
-                      <div key={index} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/30">
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">
-                              Dish Name
-                            </label>
-                            <Input
-                              value={item.name || ''}
-                              onChange={(e) =>
-                                handleMainMenuItemChange(index, 'name', e.target.value)
-                              }
-                              placeholder="e.g., Pasta Carbonara"
-                              className="text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">
-                              Price
-                            </label>
-                            <Input
-                              value={item.price || ''}
-                              onChange={(e) =>
-                                handleMainMenuItemChange(index, 'price', e.target.value)
-                              }
-                              placeholder="e.g., ₹450"
-                              className="text-sm"
-                            />
+                      <div key={index} className="border rounded-lg p-4 bg-muted/30">
+                        <div className="flex gap-2 items-start justify-between mb-3">
+                          <label className="text-sm font-medium">
+                            Menu Item {index + 1}
+                          </label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMainMenuItem(index)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Menu Images */}
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-2 block">
+                            Menu Images (Multiple images allowed)
+                          </label>
+                          <div className="space-y-2">
+                            {/* Upload Button */}
+                            <div>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => handleMainMenuImageUpload(e, index)}
+                                disabled={uploadingMenuImage?.type === 'main' && uploadingMenuImage?.itemIndex === index}
+                                className="cursor-pointer h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                              />
+                              {uploadingMenuImage?.type === 'main' && uploadingMenuImage?.itemIndex === index && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Uploading images...
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Image Preview Grid */}
+                            {item.images.length > 0 && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                                {item.images.map((imageUrl, imageIndex) => (
+                                  <div
+                                    key={imageIndex}
+                                    className="relative group border rounded-lg overflow-hidden bg-background"
+                                  >
+                                    <div className="aspect-video relative">
+                                      {imageUrl.startsWith('http') || imageUrl.startsWith('/') ? (
+                                        imageUrl.startsWith('/') ? (
+                                          <Image
+                                            src={imageUrl}
+                                            alt={`Menu image ${imageIndex + 1}`}
+                                            fill
+                                            className="object-cover"
+                                            onError={(e) => {
+                                              const target = e.target as HTMLImageElement;
+                                              target.style.display = 'none';
+                                            }}
+                                          />
+                                        ) : (
+                                          <img
+                                            src={imageUrl}
+                                            alt={`Menu image ${imageIndex + 1}`}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              const target = e.target as HTMLImageElement;
+                                              target.style.display = 'none';
+                                            }}
+                                          />
+                                        )
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                                          <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="destructive"
+                                        className="h-6 w-6 p-0"
+                                        onClick={() => handleRemoveMainMenuImage(index, imageIndex)}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveMainMenuItem(index)}
-                          className="mt-6"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
                       </div>
                     ))}
                   </div>
@@ -974,46 +1164,128 @@ export default function RestaurantsManagementPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {menuItems.map((item, index) => (
-                      <div key={index} className="flex gap-2 items-start p-3 border rounded-lg bg-muted/30">
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">
-                              Dish Name
-                            </label>
-                            <Input
-                              value={item.name || ''}
-                              onChange={(e) =>
-                                handleMenuItemChange(index, 'name', e.target.value)
-                              }
-                              placeholder="e.g., Continental Breakfast"
-                              className="text-sm"
-                            />
+                      <div key={index} className="border rounded-lg p-4 bg-muted/30">
+                        <div className="flex gap-2 items-start mb-3">
+                          <div className="flex-1 grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">
+                                Dish Name
+                              </label>
+                              <Input
+                                value={item.name || ''}
+                                onChange={(e) =>
+                                  handleMenuItemChange(index, 'name', e.target.value)
+                                }
+                                placeholder="e.g., Continental Breakfast"
+                                className="text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">
+                                Price
+                              </label>
+                              <Input
+                                value={item.price || ''}
+                                onChange={(e) =>
+                                  handleMenuItemChange(index, 'price', e.target.value)
+                                }
+                                placeholder="e.g., ₹500"
+                                className="text-sm"
+                              />
+                            </div>
                           </div>
-                          <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">
-                              Price
-                            </label>
-                            <Input
-                              value={item.price || ''}
-                              onChange={(e) =>
-                                handleMenuItemChange(index, 'price', e.target.value)
-                              }
-                              placeholder="e.g., ₹500"
-                              className="text-sm"
-                            />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMenuItem(index)}
+                            className="mt-6"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        {/* Menu Images */}
+                        <div className="mt-3">
+                          <label className="text-xs text-muted-foreground mb-2 block">
+                            Menu Images (Multiple images allowed)
+                          </label>
+                          <div className="space-y-2">
+                            {/* Upload Button */}
+                            <div>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => handleMenuHighlightImageUpload(e, index)}
+                                disabled={uploadingMenuImage?.type === 'highlight' && uploadingMenuImage?.itemIndex === index}
+                                className="cursor-pointer h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                              />
+                              {uploadingMenuImage?.type === 'highlight' && uploadingMenuImage?.itemIndex === index && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Uploading images...
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Image Preview Grid */}
+                            {item.images.length > 0 && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                                {item.images.map((imageUrl, imageIndex) => (
+                                  <div
+                                    key={imageIndex}
+                                    className="relative group border rounded-lg overflow-hidden bg-background"
+                                  >
+                                    <div className="aspect-video relative">
+                                      {imageUrl.startsWith('http') || imageUrl.startsWith('/') ? (
+                                        imageUrl.startsWith('/') ? (
+                                          <Image
+                                            src={imageUrl}
+                                            alt={`Menu image ${imageIndex + 1}`}
+                                            fill
+                                            className="object-cover"
+                                            onError={(e) => {
+                                              const target = e.target as HTMLImageElement;
+                                              target.style.display = 'none';
+                                            }}
+                                          />
+                                        ) : (
+                                          <img
+                                            src={imageUrl}
+                                            alt={`Menu image ${imageIndex + 1}`}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              const target = e.target as HTMLImageElement;
+                                              target.style.display = 'none';
+                                            }}
+                                          />
+                                        )
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                                          <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="destructive"
+                                        className="h-6 w-6 p-0"
+                                        onClick={() => handleRemoveMenuHighlightImage(index, imageIndex)}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveMenuItem(index)}
-                          className="mt-6"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
                       </div>
                     ))}
                   </div>

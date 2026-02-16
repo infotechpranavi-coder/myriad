@@ -11,6 +11,11 @@ export interface Booking {
   checkOut?: Date;
   guests?: string;
   nights?: number;
+  hours?: number;
+  selectedAddons?: Array<{
+    name: string;
+    price: number;
+  }>;
   totalAmount?: number;
   status?: 'pending' | 'active' | 'confirmed' | 'cancelled';
   createdAt?: Date;
