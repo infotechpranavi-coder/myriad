@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Clock, Users, MapPin, ChevronLeft, Star, X, ChevronRight, CheckCircle } from 'lucide-react';
+import { Clock, Users, MapPin, ChevronLeft, Star, X, ChevronRight, CheckCircle, Instagram } from 'lucide-react';
 import { Restaurant } from '@/lib/models/restaurant';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -112,7 +112,29 @@ export default function RestaurantDetailPage() {
     return null;
   };
 
+  // Get Instagram URL and handle based on restaurant
+  const getInstagramInfo = () => {
+    if (!restaurant) return null;
+    const restaurantName = restaurant.name.toLowerCase();
+    const slug = restaurant.slug?.toLowerCase();
+    
+    // Urban Dhaba: https://www.instagram.com/urbandhabba/
+    if (restaurantName.includes('urban dhaba') || slug === 'urban-dhaba') {
+      return { url: 'https://www.instagram.com/urbandhabba/', handle: '@urbandhabba' };
+    }
+    // Coastal Sea Food: https://www.instagram.com/coastalseafood_restaurant/
+    if (restaurantName.includes('coastal') || slug === 'coastal-seafood') {
+      return { url: 'https://www.instagram.com/coastalseafood_restaurant/', handle: '@coastalseafood_restaurant' };
+    }
+    // Winkingg Owl: https://www.instagram.com/winkinggowl/?hl=en
+    if (restaurantName.includes('winking') || slug === 'winking-owl') {
+      return { url: 'https://www.instagram.com/winkinggowl/?hl=en', handle: '@winkinggowl' };
+    }
+    return null;
+  };
+
   const managerNumber = getManagerNumber();
+  const instagramInfo = getInstagramInfo();
 
   if (loading) {
     return (
@@ -319,6 +341,23 @@ export default function RestaurantDetailPage() {
                     className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity font-mono"
                   >
                     {managerNumber}
+                  </a>
+                </div>
+              )}
+
+              {instagramInfo && (
+                <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border">
+                  <p className="text-foreground/60 text-sm mb-2">
+                    Follow us on Instagram
+                  </p>
+                  <a 
+                    href={instagramInfo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-primary hover:opacity-80 transition-opacity font-semibold"
+                  >
+                    <Instagram size={20} />
+                    <span>{instagramInfo.handle}</span>
                   </a>
                 </div>
               )}

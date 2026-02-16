@@ -408,8 +408,8 @@ export default function Home() {
             ) : (
               restaurants.map((restaurant, index) => (
                 <ScrollAnimationWrapper key={restaurant.id || restaurant._id || index} animation="fadeUp" delay={index * 100}>
-                  <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
-                    <div className="relative h-48 overflow-hidden bg-muted">
+                  <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full flex flex-col">
+                    <div className="relative h-48 overflow-hidden bg-muted flex-shrink-0">
                       <Image
                         src={restaurant.image || (restaurant.gallery && restaurant.gallery.length > 0 ? restaurant.gallery[0] : "/placeholder.jpg")}
                         alt={`${restaurant.name} - ${restaurant.cuisine}`}
@@ -419,17 +419,17 @@ export default function Home() {
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>
-                    <div className="p-6">
+                    <div className="p-6 flex flex-col flex-1">
                       <h3 className="text-2xl font-serif font-bold text-primary mb-1">{restaurant.name}</h3>
                       <p className="text-foreground/70 mb-4">{restaurant.cuisine}</p>
-                      <p className="text-foreground/80 mb-6 text-sm">
+                      <p className="text-foreground/80 mb-6 text-sm flex-1">
                         {restaurant.description || restaurant.about || 'Experience culinary excellence with our award-winning chefs and carefully curated menus.'}
                       </p>
                       <Link
-                        href={`/restaurants#${restaurant.slug || restaurant.name.toLowerCase().replace(/\s+/g, '-')}`}
-                        className="text-primary hover:text-accent font-medium transition-colors"
+                        href={`/restaurants/${restaurant.slug || restaurant.name.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="inline-block bg-primary text-primary-foreground px-6 py-2.5 rounded font-medium hover:opacity-90 transition-opacity text-center text-sm w-full mt-auto"
                       >
-                        Explore Menu →
+                        Book a Table
                       </Link>
                     </div>
                   </div>

@@ -316,17 +316,6 @@ export default function RestaurantsPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 px-4 bg-primary text-primary-foreground">
-        <ScrollAnimationWrapper className="max-w-4xl mx-auto text-center" animation="fadeUp">
-          <h2 className="text-4xl font-serif font-bold mb-6 text-balance">
-            Ready to Dine With Us?
-          </h2>
-          <button className="bg-primary-foreground text-primary px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95">
-            Reserve a Table
-          </button>
-        </ScrollAnimationWrapper>
-      </section>
     </main>
   );
 }

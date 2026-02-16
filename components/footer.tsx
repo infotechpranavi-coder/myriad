@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -124,27 +124,50 @@ export default function Footer() {
             <p className="text-background/70 text-sm mb-6">
               Follow us on social media for the latest updates and exclusive offers.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="space-y-3">
               <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-background/10 hover:bg-primary/20 flex items-center justify-center text-background/70 hover:text-background transition-all duration-300 hover:scale-110 hover:rotate-3"
-                aria-label="Facebook"
+                href="https://www.instagram.com/themyriadbusinesshotel/?hl=en" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-2 rounded-lg bg-background/10 hover:bg-gradient-to-r hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 text-background/70 hover:text-background transition-all duration-300 hover:scale-105 group"
               >
-                <Facebook className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-full bg-background/20 group-hover:bg-background/30 flex items-center justify-center flex-shrink-0">
+                  <Instagram className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">The Myriad Hotel</span>
               </a>
               <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-background/10 hover:bg-primary/20 flex items-center justify-center text-background/70 hover:text-background transition-all duration-300 hover:scale-110 hover:rotate-3"
-                aria-label="Instagram"
+                href="https://www.instagram.com/urbandhabba/" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-2 rounded-lg bg-background/10 hover:bg-gradient-to-r hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 text-background/70 hover:text-background transition-all duration-300 hover:scale-105 group"
               >
-                <Instagram className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-full bg-background/20 group-hover:bg-background/30 flex items-center justify-center flex-shrink-0">
+                  <Instagram className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">Urban Dhaba</span>
               </a>
               <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-background/10 hover:bg-primary/20 flex items-center justify-center text-background/70 hover:text-background transition-all duration-300 hover:scale-110 hover:rotate-3"
-                aria-label="Twitter"
+                href="https://www.instagram.com/coastalseafood_restaurant/" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-2 rounded-lg bg-background/10 hover:bg-gradient-to-r hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 text-background/70 hover:text-background transition-all duration-300 hover:scale-105 group"
               >
-                <Twitter className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-full bg-background/20 group-hover:bg-background/30 flex items-center justify-center flex-shrink-0">
+                  <Instagram className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">Coastal Sea Food</span>
+              </a>
+              <a 
+                href="https://www.instagram.com/winkinggowl/?hl=en" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-2 rounded-lg bg-background/10 hover:bg-gradient-to-r hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 text-background/70 hover:text-background transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-background/20 group-hover:bg-background/30 flex items-center justify-center flex-shrink-0">
+                  <Instagram className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">Winkingg Owl</span>
               </a>
             </div>
           </div>

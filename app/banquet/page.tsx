@@ -325,13 +325,13 @@ export default function BanquetPage() {
 
       {/* Gallery Section */}
       {galleryImages.length > 0 && (
-        <section className="py-20 px-4 bg-background">
-          <div className="max-w-6xl mx-auto">
-            <ScrollAnimationWrapper animation="fadeUp">
-              <h2 className="text-4xl font-serif font-bold text-primary mb-12 text-center text-balance">
+      <section className="py-20 px-4 bg-background">
+        <div className="max-w-6xl mx-auto">
+          <ScrollAnimationWrapper animation="fadeUp">
+            <h2 className="text-4xl font-serif font-bold text-primary mb-12 text-center text-balance">
                 Gallery
-              </h2>
-            </ScrollAnimationWrapper>
+            </h2>
+          </ScrollAnimationWrapper>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {galleryImages.map((image, index) => (
                 <ScrollAnimationWrapper key={image._id} animation="scaleIn" delay={index * 100}>
@@ -353,40 +353,13 @@ export default function BanquetPage() {
                         )}
                       </div>
                     </div>
-                  </div>
-                </ScrollAnimationWrapper>
-              ))}
-            </div>
+                </div>
+              </ScrollAnimationWrapper>
+            ))}
           </div>
-        </section>
-      )}
-
-      {/* CTA */}
-      <section className="py-16 px-4 bg-primary text-primary-foreground">
-        <ScrollAnimationWrapper className="max-w-4xl mx-auto text-center" animation="fadeUp">
-          <h2 className="text-4xl font-serif font-bold mb-6 text-balance">
-            Let Us Host Your Next Event
-          </h2>
-          <p className="text-lg mb-6 opacity-90">
-            Contact our events team to discuss your requirements
-          </p>
-          <div className="mb-8 p-4 bg-primary-foreground/10 rounded-lg border border-primary-foreground/20 inline-block">
-            <p className="text-sm mb-1 opacity-80">Banquet Manager Contact Number</p>
-            <a 
-              href="tel:8828821296" 
-              className="text-2xl font-bold hover:opacity-80 transition-opacity font-mono"
-            >
-              88288 21296
-            </a>
-          </div>
-          <button 
-            onClick={() => setProposalModalOpen(true)}
-            className="bg-primary-foreground text-primary px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
-          >
-            Get in Touch
-          </button>
-        </ScrollAnimationWrapper>
+        </div>
       </section>
+      )}
 
       {/* Proposal Request Modal */}
       <Dialog open={proposalModalOpen} onOpenChange={setProposalModalOpen} modal={true}>

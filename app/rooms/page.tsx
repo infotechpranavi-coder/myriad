@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Star, Wifi, Coffee, Tv, Wind, Sofa, Shield, CheckCircle2, MapPin, Clock, CreditCard, Zap, Waves, Car } from 'lucide-react';
+import { Star, Wifi, Coffee, Tv, Wind, Sofa, Shield, CheckCircle2, MapPin, Clock, CreditCard, Zap, Waves, Car, Instagram } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
 import { Room } from '@/lib/models/room';
 import Link from 'next/link';
@@ -237,6 +237,22 @@ export default function RoomsPage() {
             </div>
           </ScrollAnimationWrapper>
         </div>
+      </section>
+
+      {/* Social Media Section */}
+      <section className="py-16 px-4 bg-muted/30">
+        <ScrollAnimationWrapper animation="fadeUp" className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl font-serif font-bold text-primary mb-6">Follow Us</h2>
+          <a 
+            href="https://www.instagram.com/themyriadbusinesshotel/?hl=en"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white px-8 py-4 rounded-lg font-semibold hover:opacity-90 transition-opacity shadow-lg"
+          >
+            <Instagram size={24} />
+            <span>@themyriadbusinesshotel</span>
+          </a>
+        </ScrollAnimationWrapper>
       </section>
 
     </main>
