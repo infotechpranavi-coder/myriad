@@ -111,6 +111,7 @@ export default function RoomDetailPage() {
         checkIn: Date | undefined;
         checkOut: Date | undefined;
         nights: number;
+        hours: number;
         guests: string;
         totalAmount: number;
     } | null>(null);
@@ -160,7 +161,8 @@ export default function RoomDetailPage() {
         );
     }
 
-    const basePrice = room.priceSummary?.basePrice || room.price || 0;
+    // Base price for 24 hours (stored in database - this is the 24-hour rate)
+    const pricePer24Hours = room.priceSummary?.basePrice || room.price || 0;
     const taxes = room.priceSummary?.taxes || 0;
     const serviceFees = room.priceSummary?.serviceFees || 0;
     const roomImages = room.gallery || room.images || [];
@@ -168,10 +170,25 @@ export default function RoomDetailPage() {
     const addons = room.addons || [];
     const goibiboOffers = room.goibiboOffers || [];
 
-    // Calculate number of nights
+    // Calculate number of days from selected dates (can be fractional)
+    const days = dateRange.from && dateRange.to
+        ? (dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24)
+        : 1;
+    
+    // Calculate number of nights (for display purposes - rounded up)
     const nights = dateRange.from && dateRange.to
         ? Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
         : 1;
+
+    // Calculate number of hours (for display purposes)
+    const hours = dateRange.from && dateRange.to
+        ? Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60))
+        : 24;
+
+    // Calculate base price based on 24-hour rate and number of days
+    // If less than 24 hours, charge for 1 day (24-hour rate)
+    // If more than 24 hours, calculate proportionally
+    const basePrice = days < 1 ? pricePer24Hours : pricePer24Hours * days;
 
     return (
         <main className="min-h-screen bg-muted/20">
@@ -356,7 +373,7 @@ export default function RoomDetailPage() {
                             <div>
                                 <p className="text-xs text-muted-foreground">Guests</p>
                                 <p className="font-semibold">
-                                    2 Adults · {nights} {nights === 1 ? 'Night' : 'Nights'}
+                                    2 Adults · {hours} {hours === 1 ? 'Hour' : 'Hours'} ({nights} {nights === 1 ? 'Night' : 'Nights'})
                                 </p>
                             </div>
                         </div>
@@ -586,6 +603,7 @@ export default function RoomDetailPage() {
                                         checkOut: dateRange.to,
                                         guests: '2',
                                         nights: nights,
+                                        hours: hours,
                                         totalAmount: basePrice + taxes + serviceFees,
                                     };
 
@@ -604,6 +622,7 @@ export default function RoomDetailPage() {
                                             checkIn: dateRange.from,
                                             checkOut: dateRange.to,
                                             nights: nights,
+                                            hours: hours,
                                             guests: '2',
                                             totalAmount: basePrice + taxes + serviceFees,
                                         });
@@ -704,6 +723,10 @@ export default function RoomDetailPage() {
                     <PricingSidebar
                         roomName={roomName}
                         price={basePrice}
+                        pricePer24Hours={pricePer24Hours}
+                        days={days}
+                        hours={hours}
+                        nights={nights}
                         taxes={taxes}
                         serviceFees={serviceFees}
                         addons={addons}
@@ -747,6 +770,12 @@ export default function RoomDetailPage() {
                                         <span className="text-sm font-semibold">
                                             {format(bookingDetails.checkOut, 'EEEE, MMMM d, yyyy')}
                                         </span>
+                                    </div>
+                                )}
+                                {bookingDetails.hours > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-muted-foreground">Hours:</span>
+                                        <span className="text-sm font-semibold">{bookingDetails.hours} {bookingDetails.hours === 1 ? 'Hour' : 'Hours'}</span>
                                     </div>
                                 )}
                                 {bookingDetails.nights > 0 && (

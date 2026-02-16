@@ -32,9 +32,9 @@ export default function Header() {
   ];
 
   const restaurantOptions = [
-    { name: 'Urban Dhaba', href: '/restaurants#urban-dhaba' },
-    { name: 'Winking Owl', href: '/restaurants#winking-owl' },
-    { name: 'Coastal Sea Food', href: '/restaurants#coastal-seafood' },
+    { name: 'Urban Dhaba', href: '/restaurants/urban-dhaba' },
+    { name: 'Winking Owl', href: '/restaurants/winking-owl' },
+    { name: 'Coastal Sea Food', href: '/restaurants/coastal-seafood' },
    
   ];
 

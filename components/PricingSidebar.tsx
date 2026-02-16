@@ -6,6 +6,10 @@ import { ChevronDown, Gift, CheckCircle } from 'lucide-react'
 interface PricingSidebarProps {
     roomName: string
     price: number
+    pricePer24Hours?: number
+    days?: number
+    hours?: number
+    nights?: number
     taxes?: number
     serviceFees?: number
     addons?: Array<{
@@ -20,7 +24,7 @@ interface PricingSidebarProps {
     }>
 }
 
-export function PricingSidebar({ roomName, price, taxes = 0, serviceFees = 0, addons = [], goibiboOffers = [] }: PricingSidebarProps) {
+export function PricingSidebar({ roomName, price, pricePer24Hours, days, hours, nights, taxes = 0, serviceFees = 0, addons = [], goibiboOffers = [] }: PricingSidebarProps) {
     const totalTaxesAndFees = taxes + serviceFees;
     const total = price + totalTaxesAndFees;
 
@@ -47,7 +51,14 @@ export function PricingSidebar({ roomName, price, taxes = 0, serviceFees = 0, ad
                                     ₹{price.toLocaleString()} + ₹{totalTaxesAndFees.toLocaleString()}
                                 </span>
                             </div>
-                            <p className="text-xs text-foreground/50">(1 Room x 1 Night)</p>
+                            {pricePer24Hours && days !== undefined ? (
+                                <p className="text-xs text-foreground/50">
+                                    (₹{pricePer24Hours.toLocaleString()}/24hrs × {days.toFixed(1)} {days === 1 ? 'day' : 'days'})
+                                    {nights && nights > 0 && ` • ${nights} ${nights === 1 ? 'night' : 'nights'}`}
+                                </p>
+                            ) : (
+                                <p className="text-xs text-foreground/50">(1 Room x 1 Night)</p>
+                            )}
                         </div>
 
                         <div className="pt-4 border-t border-border">
