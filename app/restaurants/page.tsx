@@ -292,13 +292,21 @@ export default function RestaurantsPage() {
                         </div>
                       </div>
 
-                      {/* Button */}
-                      <Link
-                        href={`/restaurants/${restaurant.slug}`}
-                        className="block w-full bg-primary text-primary-foreground px-6 py-2.5 rounded font-medium hover:opacity-90 transition-opacity text-center text-sm"
-                      >
-                        Book a Table
-                      </Link>
+                      {/* Buttons */}
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/restaurants/${restaurant.slug}`}
+                          className="flex-1 bg-primary text-primary-foreground px-6 py-2.5 rounded font-medium hover:opacity-90 transition-opacity text-center text-sm"
+                        >
+                          Book a Table
+                        </Link>
+                        <Link
+                          href={`/restaurants/${restaurant.slug}#menu`}
+                          className="flex-1 bg-transparent border-2 border-primary text-primary px-6 py-2.5 rounded font-medium hover:bg-primary/10 transition-colors text-center text-sm"
+                        >
+                          Explore Menu
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>

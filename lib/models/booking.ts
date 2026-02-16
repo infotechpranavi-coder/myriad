@@ -5,7 +5,7 @@ export interface Booking {
   title: string; // Mr, Ms, etc.
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   mobileNumber: string;
   checkIn?: Date;
   checkOut?: Date;

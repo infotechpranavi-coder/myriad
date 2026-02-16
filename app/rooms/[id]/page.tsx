@@ -542,6 +542,18 @@ export default function RoomDetailPage() {
                         <h3 className="font-bold mb-3">About the Room</h3>
                         <p className="text-muted-foreground mb-6">{room.description}</p>
 
+                        <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border">
+                            <p className="text-foreground/60 text-sm mb-1">
+                                Rooms Reception Contact Number
+                            </p>
+                            <a 
+                                href="tel:8879929746"
+                                className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity font-mono"
+                            >
+                                88799 29746
+                            </a>
+                        </div>
+
                         <h4 className="font-bold mb-3">Amenities</h4>
                         <div className="grid grid-cols-2 gap-3">
                             {room.amenities.map((a) => (
@@ -663,13 +675,12 @@ export default function RoomDetailPage() {
 
                             <Input
                                 type="email"
-                                placeholder="Email Address"
+                                placeholder="Email Address (optional)"
                                 className="mb-4"
                                 value={guestForm.email}
                                 onChange={(e) =>
                                     setGuestForm({ ...guestForm, email: e.target.value })
                                 }
-                                required
                             />
                             <Input
                                 type="tel"

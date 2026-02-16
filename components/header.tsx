@@ -41,17 +41,19 @@ export default function Header() {
   return (
     <header className={`sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-2 border-primary/20 transition-all duration-300 ${hasScrolled ? 'shadow-lg shadow-primary/5' : 'shadow-sm'}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-18 md:h-20 py-2">
+        <div className="flex justify-between items-center min-h-18 md:min-h-20 py-2">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-300">
-            <Image
-              src="/Rose Day ka plan tha.png"
-              alt="The Myriad Hotel"
-              width={200}
-              height={70}
-              className="h-16 md:h-20 w-auto object-contain"
-              priority
-            />
+          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-300 -ml-8 md:-ml-12">
+            <div className="p-2">
+              <Image
+                src="/Rose Day ka plan tha.png"
+                alt="The Myriad Hotel"
+                width={200}
+                height={70}
+                className="h-16 md:h-20 w-auto object-contain"
+                priority
+              />
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -104,12 +106,12 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {/* Blog Link */}
+            {/* Testimonial Link */}
             <Link
               href="/blog"
               className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group transition-all duration-300"
             >
-              <span className="relative z-10">Blog</span>
+              <span className="relative z-10">Testimonial</span>
               <span className="absolute inset-0 bg-primary/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-3/4 transition-all duration-300" />
             </Link>
@@ -192,13 +194,13 @@ export default function Header() {
               )}
             </div>
             
-            {/* Mobile Blog Link */}
+            {/* Mobile Testimonial Link */}
             <Link
               href="/blog"
               className="block px-4 py-3 text-foreground/90 font-serif text-sm uppercase tracking-wider hover:bg-primary/5 hover:text-primary transition-all duration-200 border-l-2 border-transparent hover:border-primary"
               onClick={() => setIsMenuOpen(false)}
             >
-              Blog
+              Testimonial
             </Link>
             
             <div className="pt-4 border-t border-primary/10 mt-4">

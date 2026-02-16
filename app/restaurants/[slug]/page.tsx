@@ -91,6 +91,29 @@ export default function RestaurantDetailPage() {
 
   const galleryImages = getGalleryImages();
 
+  // Get manager contact number based on restaurant
+  const getManagerNumber = () => {
+    if (!restaurant) return null;
+    const restaurantName = restaurant.name.toLowerCase();
+    const slug = restaurant.slug?.toLowerCase();
+    
+    // Urban Dhaba Manager: 91527 13732
+    if (restaurantName.includes('urban dhaba') || slug === 'urban-dhaba') {
+      return '91527 13732';
+    }
+    // Coastal Sea Food Manager: 91527 13732
+    if (restaurantName.includes('coastal') || slug === 'coastal-seafood') {
+      return '91527 13732';
+    }
+    // Winkingg Owl Manager: 88799 29560
+    if (restaurantName.includes('winking') || slug === 'winking-owl') {
+      return '88799 29560';
+    }
+    return null;
+  };
+
+  const managerNumber = getManagerNumber();
+
   if (loading) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
@@ -130,7 +153,7 @@ export default function RestaurantDetailPage() {
           restaurantName: restaurant.name,
           restaurantSlug: restaurant.slug,
           name: formData.name,
-          email: formData.email,
+          email: formData.email && formData.email.trim() ? formData.email.trim() : undefined,
           phone: formData.phone,
           date: formData.date,
           time: formData.time,
@@ -226,56 +249,50 @@ export default function RestaurantDetailPage() {
         </div>
       </div>
 
-      {/* Hero Image */}
-      <div className="relative h-[60vh] w-full">
-        <Image
-          src={restaurant.image}
-          alt={restaurant.name}
-          fill
-          className="object-cover"
-          quality={95}
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-8 left-8 right-8 text-white">
+      {/* Hero Section - Logo Only */}
+      <div className="relative h-[40vh] min-h-[300px] w-full bg-muted/30 flex items-center justify-center">
+        <div className="text-center">
           {restaurant.slug === 'urban-dhaba' ? (
-            <div className="mb-4">
+            <div>
               <Image
                 src="/Urban Dhaba.png"
                 alt="Urban Dhaba Logo"
-                width={400}
-                height={160}
-                className="h-28 md:h-32 w-auto object-contain mb-3"
+                width={500}
+                height={200}
+                className="h-32 md:h-40 w-auto object-contain mx-auto mb-4"
+                priority
               />
-              <p className="text-xl text-white/90">{restaurant.cuisine}</p>
+              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
             </div>
           ) : restaurant.slug === 'winking-owl' ? (
-            <div className="mb-4">
+            <div>
               <Image
                 src="/Winkingg Owl.png"
                 alt="Winkingg Owl Logo"
-                width={400}
-                height={160}
-                className="h-28 md:h-32 w-auto object-contain mb-3"
+                width={500}
+                height={200}
+                className="h-32 md:h-40 w-auto object-contain mx-auto mb-4"
+                priority
               />
-              <p className="text-xl text-white/90">{restaurant.cuisine}</p>
+              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
             </div>
           ) : restaurant.slug === 'coastal-seafood' ? (
-            <div className="mb-4">
+            <div>
               <Image
                 src="/Coastal Sea Food.png"
                 alt="Coastal Sea Food Logo"
-                width={400}
-                height={160}
-                className="h-28 md:h-32 w-auto object-contain mb-3"
+                width={500}
+                height={200}
+                className="h-32 md:h-40 w-auto object-contain mx-auto mb-4"
+                priority
               />
-              <p className="text-xl text-white/90">{restaurant.cuisine}</p>
+              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
             </div>
           ) : (
-            <>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold mb-2">{restaurant.name}</h1>
-              <p className="text-xl">{restaurant.cuisine}</p>
-            </>
+            <div>
+              <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-2">{restaurant.name}</h1>
+              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
+            </div>
           )}
         </div>
       </div>
@@ -291,6 +308,20 @@ export default function RestaurantDetailPage() {
               <p className="text-foreground/80 text-lg leading-relaxed mb-6">
                 {restaurant.description}
               </p>
+
+              {managerNumber && (
+                <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border">
+                  <p className="text-foreground/60 text-sm mb-1">
+                    {restaurant.name} Manager Contact Number
+                  </p>
+                  <a 
+                    href={`tel:${managerNumber.replace(/\s/g, '')}`}
+                    className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity font-mono"
+                  >
+                    {managerNumber}
+                  </a>
+                </div>
+              )}
 
               <div className="grid md:grid-cols-3 gap-6 pt-6 border-t">
                 <div className="flex items-start gap-3">
@@ -331,7 +362,7 @@ export default function RestaurantDetailPage() {
             </section>
 
             {/* Menu */}
-            <section className="bg-card rounded-lg border p-6">
+            <section id="menu" className="bg-card rounded-lg border p-6 scroll-mt-24">
               <h2 className="text-2xl font-serif font-bold text-primary mb-6">Menu Highlights</h2>
               {Object.entries(restaurant.menu).map(([category, items]) => (
                 <div key={category} className="mb-8 last:mb-0">
@@ -376,14 +407,13 @@ export default function RestaurantDetailPage() {
 
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">
-                    Email Address *
+                    Email Address (Optional)
                   </label>
                   <Input
                     type="email"
-                    placeholder="your.email@example.com"
+                    placeholder="your.email@example.com (optional)"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
                   />
                 </div>
 
@@ -577,7 +607,7 @@ export default function RestaurantDetailPage() {
               </div>
               <DialogTitle className="text-2xl font-serif">Table Booking Confirmed!</DialogTitle>
               <DialogDescription className="text-base">
-                Your table booking request has been submitted successfully. We will contact you shortly to confirm your reservation.
+                Your table booking request has been submitted successfully. You are now eligible for a 10% discount. We will contact you shortly to confirm your reservation.
               </DialogDescription>
             </div>
           </DialogHeader>

@@ -579,15 +579,14 @@ export default function Home() {
             {/* Email Field */}
             <div className="space-y-2">
               <Label htmlFor="inquiry-email" className="text-foreground font-medium">
-                Email Address *
+                Email Address
               </Label>
               <Input
                 id="inquiry-email"
                 type="email"
-                placeholder="Enter your email address"
+                placeholder="Enter your email address (optional)"
                 value={inquiryFormData.email}
                 onChange={(e) => setInquiryFormData({ ...inquiryFormData, email: e.target.value })}
-                required
                 className="w-full"
               />
             </div>

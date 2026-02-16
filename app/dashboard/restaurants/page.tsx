@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -69,6 +70,32 @@ export default function RestaurantsManagementPage() {
     fetchRestaurants();
     fetchBookings();
   }, []);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isDialogOpen || viewingBooking !== null) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [isDialogOpen, viewingBooking]);
 
   async function fetchBookings() {
     try {
@@ -569,6 +596,7 @@ export default function RestaurantsManagementPage() {
               setNewImageUrl('');
             }
           }}
+          modal={true}
         >
           <DialogTrigger asChild>
             <Button onClick={handleAdd}>
@@ -576,18 +604,39 @@ export default function RestaurantsManagementPage() {
               Add Restaurant
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
-            <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
-              <DialogTitle>
-                {editingRestaurant ? 'Edit Restaurant' : 'Add New Restaurant'}
-              </DialogTitle>
-              <DialogDescription>
-                {editingRestaurant
-                  ? 'Update restaurant details'
-                  : 'Create a new restaurant'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 px-6 pb-6 overflow-y-auto flex-1 min-h-0">
+          <DialogContent 
+            className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+            onInteractOutside={(e) => e.preventDefault()}
+          >
+            <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingRestaurant ? 'Edit Restaurant' : 'Add New Restaurant'}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingRestaurant
+                    ? 'Update restaurant details'
+                    : 'Create a new restaurant'}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </DialogClose>
+            </div>
+            <div 
+              className="space-y-4 px-6 pb-6 overflow-y-auto flex-1 min-h-0 overscroll-contain" 
+              style={{ 
+                maxHeight: 'calc(90vh - 140px)',
+                WebkitOverflowScrolling: 'touch'
+              }}
+              onWheel={(e) => {
+                e.stopPropagation();
+              }}
+              onTouchMove={(e) => {
+                e.stopPropagation();
+              }}
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Restaurant Name</label>
@@ -1115,14 +1164,36 @@ export default function RestaurantsManagementPage() {
       </div>
 
       {/* View Booking Dialog */}
-      <Dialog open={viewingBooking !== null} onOpenChange={(open) => !open && setViewingBooking(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Booking Details</DialogTitle>
-            <DialogDescription>
-              View complete booking information
-            </DialogDescription>
-          </DialogHeader>
+      <Dialog open={viewingBooking !== null} onOpenChange={(open) => !open && setViewingBooking(null)} modal={true}>
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+            <DialogHeader>
+              <DialogTitle>Booking Details</DialogTitle>
+              <DialogDescription>
+                View complete booking information
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain px-6 py-4" 
+            style={{ 
+              maxHeight: 'calc(90vh - 140px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
           {viewingBooking && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -1212,6 +1283,7 @@ export default function RestaurantsManagementPage() {
               </div>
             </div>
           )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

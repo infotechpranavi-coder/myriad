@@ -1,18 +1,71 @@
 'use client';
 
 import Image from 'next/image';
-import { Users, Layout, Lightbulb, Wifi, Volume2 } from 'lucide-react';
+import { Users, Layout, Lightbulb, Wifi, Volume2, X } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
 import { useState, useEffect } from 'react';
 import { BanquetGalleryImage } from '@/lib/models/banquet-gallery';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 export default function BanquetPage() {
   const [galleryImages, setGalleryImages] = useState<BanquetGalleryImage[]>([]);
   const [loadingGallery, setLoadingGallery] = useState(true);
+  const [proposalModalOpen, setProposalModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [proposalFormData, setProposalFormData] = useState({
+    firstName: '',
+    lastName: '',
+    mobileNumber: '',
+    alternateContactNumber: '',
+    eventType: '',
+    eventTypeOther: '',
+    eventDate: '',
+    eventTiming: '',
+    foodPreference: '',
+    foodPreferenceOther: '',
+    alcoholRequired: 'No',
+    expectedGuests: '',
+    roomsRequired: 'No',
+    numberOfRooms: '',
+    additionalRequirements: '',
+  });
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchGalleryImages();
   }, []);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (proposalModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [proposalModalOpen]);
 
   async function fetchGalleryImages() {
     try {
@@ -91,7 +144,20 @@ export default function BanquetPage() {
                   </div>
                 </div>
 
-                <button className="bg-primary text-primary-foreground px-8 py-3 rounded font-medium hover:opacity-90 transition-opacity">
+                <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border">
+                  <p className="text-foreground/60 text-sm mb-1">Banquet Manager Contact Number</p>
+                  <a 
+                    href="tel:8828821296" 
+                    className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity font-mono"
+                  >
+                    88288 21296
+                  </a>
+                </div>
+
+                <button 
+                  onClick={() => setProposalModalOpen(true)}
+                  className="bg-primary text-primary-foreground px-8 py-3 rounded font-medium hover:opacity-90 transition-opacity"
+                >
                   Request Proposal
                 </button>
               </div>
@@ -301,14 +367,386 @@ export default function BanquetPage() {
           <h2 className="text-4xl font-serif font-bold mb-6 text-balance">
             Let Us Host Your Next Event
           </h2>
-          <p className="text-lg mb-8 opacity-90">
+          <p className="text-lg mb-6 opacity-90">
             Contact our events team to discuss your requirements
           </p>
-          <button className="bg-primary-foreground text-primary px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95">
+          <div className="mb-8 p-4 bg-primary-foreground/10 rounded-lg border border-primary-foreground/20 inline-block">
+            <p className="text-sm mb-1 opacity-80">Banquet Manager Contact Number</p>
+            <a 
+              href="tel:8828821296" 
+              className="text-2xl font-bold hover:opacity-80 transition-opacity font-mono"
+            >
+              88288 21296
+            </a>
+          </div>
+          <button 
+            onClick={() => setProposalModalOpen(true)}
+            className="bg-primary-foreground text-primary px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
+          >
             Get in Touch
           </button>
         </ScrollAnimationWrapper>
       </section>
+
+      {/* Proposal Request Modal */}
+      <Dialog open={proposalModalOpen} onOpenChange={setProposalModalOpen} modal={true}>
+        <DialogContent 
+          className="sm:max-w-[700px] max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault();
+            setProposalModalOpen(false);
+          }}
+        >
+          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-serif text-primary">🏛️ Banquet Booking Form</DialogTitle>
+              <DialogDescription>
+                Fill out the form below to request a customized proposal for your event.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain px-6 py-4" 
+            style={{ 
+              maxHeight: 'calc(90vh - 140px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
+          <form 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setSubmitting(true);
+              try {
+                const response = await fetch('/api/proposals', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    firstName: proposalFormData.firstName,
+                    lastName: proposalFormData.lastName,
+                    mobileNumber: proposalFormData.mobileNumber,
+                    alternateContactNumber: proposalFormData.alternateContactNumber || undefined,
+                    eventType: proposalFormData.eventType,
+                    eventTypeOther: proposalFormData.eventType === 'Other' ? proposalFormData.eventTypeOther : undefined,
+                    eventDate: proposalFormData.eventDate || undefined,
+                    eventTiming: proposalFormData.eventTiming || undefined,
+                    foodPreference: proposalFormData.foodPreference,
+                    foodPreferenceOther: proposalFormData.foodPreference === 'Other' ? proposalFormData.foodPreferenceOther : undefined,
+                    alcoholRequired: proposalFormData.alcoholRequired,
+                    expectedGuests: proposalFormData.expectedGuests || undefined,
+                    roomsRequired: proposalFormData.roomsRequired,
+                    numberOfRooms: proposalFormData.roomsRequired === 'Yes' ? proposalFormData.numberOfRooms : undefined,
+                    additionalRequirements: proposalFormData.additionalRequirements || undefined,
+                  }),
+                });
+
+                if (response.ok) {
+                  toast({
+                    title: 'Success',
+                    description: 'Your proposal request has been submitted successfully. We will contact you shortly.',
+                  });
+                  setProposalModalOpen(false);
+                  setProposalFormData({
+                    firstName: '',
+                    lastName: '',
+                    mobileNumber: '',
+                    alternateContactNumber: '',
+                    eventType: '',
+                    eventTypeOther: '',
+                    eventDate: '',
+                    eventTiming: '',
+                    foodPreference: '',
+                    foodPreferenceOther: '',
+                    alcoholRequired: 'No',
+                    expectedGuests: '',
+                    roomsRequired: 'No',
+                    numberOfRooms: '',
+                    additionalRequirements: '',
+                  });
+                } else {
+                  const error = await response.json();
+                  toast({
+                    title: 'Error',
+                    description: error.error || 'Failed to submit proposal request',
+                    variant: 'destructive',
+                  });
+                }
+              } catch (error) {
+                console.error('Error submitting proposal:', error);
+                toast({
+                  title: 'Error',
+                  description: 'Failed to submit proposal request',
+                  variant: 'destructive',
+                });
+              } finally {
+                setSubmitting(false);
+              }
+            }}
+            className="space-y-6 mt-4"
+          >
+            {/* Personal Details */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-primary border-b pb-2">Personal Details</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="proposal-first-name" className="text-foreground font-medium">
+                    First Name *
+                  </Label>
+                  <Input
+                    id="proposal-first-name"
+                    type="text"
+                    placeholder="Enter first name"
+                    value={proposalFormData.firstName}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, firstName: e.target.value })}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="proposal-last-name" className="text-foreground font-medium">
+                    Last Name *
+                  </Label>
+                  <Input
+                    id="proposal-last-name"
+                    type="text"
+                    placeholder="Enter last name"
+                    value={proposalFormData.lastName}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, lastName: e.target.value })}
+                    required
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="proposal-mobile" className="text-foreground font-medium">
+                    Mobile Number *
+                  </Label>
+                  <Input
+                    id="proposal-mobile"
+                    type="tel"
+                    placeholder="Enter mobile number"
+                    value={proposalFormData.mobileNumber}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, mobileNumber: e.target.value })}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="proposal-alternate" className="text-foreground font-medium">
+                    Alternate Contact Number
+                  </Label>
+                  <Input
+                    id="proposal-alternate"
+                    type="tel"
+                    placeholder="Enter alternate number (optional)"
+                    value={proposalFormData.alternateContactNumber}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, alternateContactNumber: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Event Details */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-primary border-b pb-2">Event Details</h3>
+              <div className="space-y-2">
+                <Label htmlFor="proposal-event-type" className="text-foreground font-medium">
+                  Type of Function *
+                </Label>
+                <Select
+                  value={proposalFormData.eventType}
+                  onValueChange={(value) => setProposalFormData({ ...proposalFormData, eventType: value, eventTypeOther: '' })}
+                  required
+                >
+                  <SelectTrigger id="proposal-event-type">
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Birthday">Birthday</SelectItem>
+                    <SelectItem value="Wedding">Wedding</SelectItem>
+                    <SelectItem value="Engagement">Engagement</SelectItem>
+                    <SelectItem value="Corporate Event">Corporate Event</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {proposalFormData.eventType === 'Other' && (
+                  <Input
+                    type="text"
+                    placeholder="Please specify"
+                    value={proposalFormData.eventTypeOther}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, eventTypeOther: e.target.value })}
+                    className="w-full mt-2"
+                  />
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="proposal-date" className="text-foreground font-medium">
+                    Event Date
+                  </Label>
+                  <Input
+                    id="proposal-date"
+                    type="date"
+                    value={proposalFormData.eventDate}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, eventDate: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="proposal-timing" className="text-foreground font-medium">
+                    Event Timing
+                  </Label>
+                  <Input
+                    id="proposal-timing"
+                    type="time"
+                    value={proposalFormData.eventTiming}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, eventTiming: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Catering Preferences */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-primary border-b pb-2">Catering Preferences</h3>
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">Food Preference *</Label>
+                <Select
+                  value={proposalFormData.foodPreference}
+                  onValueChange={(value) => setProposalFormData({ ...proposalFormData, foodPreference: value, foodPreferenceOther: '' })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select food preference" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pure Veg">Pure Veg</SelectItem>
+                    <SelectItem value="Veg & Non-Veg">Veg & Non-Veg</SelectItem>
+                    <SelectItem value="Jain Food">Jain Food</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {proposalFormData.foodPreference === 'Other' && (
+                  <Input
+                    type="text"
+                    placeholder="Please specify"
+                    value={proposalFormData.foodPreferenceOther}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, foodPreferenceOther: e.target.value })}
+                    className="w-full mt-2"
+                  />
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">Alcohol Required *</Label>
+                <Select
+                  value={proposalFormData.alcoholRequired}
+                  onValueChange={(value: 'Yes' | 'No') => setProposalFormData({ ...proposalFormData, alcoholRequired: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Guest & Accommodation Details */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-primary border-b pb-2">Guest & Accommodation Details</h3>
+              <div className="space-y-2">
+                <Label htmlFor="proposal-guests" className="text-foreground font-medium">
+                  Expected Number of Guests (Capacity)
+                </Label>
+                <Input
+                  id="proposal-guests"
+                  type="number"
+                  placeholder="Enter number of guests"
+                  value={proposalFormData.expectedGuests}
+                  onChange={(e) => setProposalFormData({ ...proposalFormData, expectedGuests: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-foreground font-medium">Rooms Required *</Label>
+                <Select
+                  value={proposalFormData.roomsRequired}
+                  onValueChange={(value: 'Yes' | 'No') => setProposalFormData({ ...proposalFormData, roomsRequired: value, numberOfRooms: value === 'No' ? '' : proposalFormData.numberOfRooms })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
+                {proposalFormData.roomsRequired === 'Yes' && (
+                  <Input
+                    type="number"
+                    placeholder="Number of rooms"
+                    value={proposalFormData.numberOfRooms}
+                    onChange={(e) => setProposalFormData({ ...proposalFormData, numberOfRooms: e.target.value })}
+                    className="w-full mt-2"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Additional Requirements */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-primary border-b pb-2">Additional Requirements / Special Notes</h3>
+              <Textarea
+                placeholder="Enter any additional requirements or special notes..."
+                value={proposalFormData.additionalRequirements}
+                onChange={(e) => setProposalFormData({ ...proposalFormData, additionalRequirements: e.target.value })}
+                rows={4}
+                className="w-full"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4 pb-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setProposalModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-primary text-primary-foreground hover:opacity-90"
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Submit Request'}
+              </Button>
+            </div>
+          </form>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

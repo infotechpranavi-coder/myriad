@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Loader2, Image as ImageIcon, Upload, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +38,32 @@ export default function BanquetGalleryManagementPage() {
   useEffect(() => {
     fetchImages();
   }, []);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isDialogOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [isDialogOpen]);
 
   async function fetchImages() {
     try {
@@ -428,20 +455,41 @@ export default function BanquetGalleryManagementPage() {
       </Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingImage ? 'Edit Gallery Image' : 'Add New Gallery Image'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingImage
-                ? 'Update the gallery image information below'
-                : 'Add a new image to the banquet gallery section'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 mt-4">
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} modal={true}>
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+            <DialogHeader>
+              <DialogTitle>
+                {editingImage ? 'Edit Gallery Image' : 'Add New Gallery Image'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingImage
+                  ? 'Update the gallery image information below'
+                  : 'Add a new image to the banquet gallery section'}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain px-6 py-4" 
+            style={{ 
+              maxHeight: 'calc(90vh - 140px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
+          <div className="space-y-6">
             {/* Image Upload Section */}
             <div className="space-y-4">
               <Label>Image *</Label>
@@ -590,6 +638,7 @@ export default function BanquetGalleryManagementPage() {
                 )}
               </Button>
             </div>
+          </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -1,7 +1,7 @@
 'use client';
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
-import { Home, Hotel, UtensilsCrossed, Calendar, Settings, BarChart3, LogOut, FileText, Image as ImageIcon, Images, MessageSquare } from 'lucide-react';
+import { Home, Hotel, UtensilsCrossed, Calendar, Settings, BarChart3, LogOut, FileText, Image as ImageIcon, Images, MessageSquare, FileCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -50,6 +50,11 @@ const menuItems = [
     title: 'Testimonials',
     icon: MessageSquare,
     href: '/dashboard/testimonials',
+  },
+  {
+    title: 'Proposals',
+    icon: FileCheck,
+    href: '/dashboard/proposals',
   },
   {
     title: 'Settings',
@@ -108,10 +113,6 @@ export default function DashboardLayout({
           </div>
         </Sidebar>
         <main className="flex-1 overflow-auto">
-          <div className="border-b p-4 flex items-center gap-4">
-            <SidebarTrigger />
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          </div>
           <div className="p-6">
             {children}
           </div>

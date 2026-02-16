@@ -39,11 +39,11 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <label className="block text-foreground font-medium mb-2">
-                    Email Address
+                    Email Address (Optional)
                   </label>
                   <input
                     type="email"
-                    placeholder="your.email@example.com"
+                    placeholder="your.email@example.com (optional)"
                     className="w-full px-4 py-3 rounded border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>

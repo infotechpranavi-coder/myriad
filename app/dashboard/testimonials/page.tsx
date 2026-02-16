@@ -12,8 +12,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Loader2, Star, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, Star, ArrowUp, ArrowDown, Eye, EyeOff, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Testimonial } from '@/lib/models/testimonial';
 import {
@@ -44,6 +45,32 @@ export default function TestimonialsManagementPage() {
   useEffect(() => {
     fetchTestimonials();
   }, []);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isDialogOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [isDialogOpen]);
 
   async function fetchTestimonials() {
     try {
@@ -417,20 +444,41 @@ export default function TestimonialsManagementPage() {
       )}
 
       {/* Add/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingTestimonial
-                ? 'Update the testimonial details below.'
-                : 'Fill in the details to add a new testimonial.'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-4">
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} modal={true}>
+        <DialogContent 
+          className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+            <DialogHeader>
+              <DialogTitle>
+                {editingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingTestimonial
+                  ? 'Update the testimonial details below.'
+                  : 'Fill in the details to add a new testimonial.'}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain px-6 py-4" 
+            style={{ 
+              maxHeight: 'calc(90vh - 140px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -528,6 +576,7 @@ export default function TestimonialsManagementPage() {
                 )}
               </Button>
             </div>
+          </div>
           </div>
         </DialogContent>
       </Dialog>

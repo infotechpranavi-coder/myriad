@@ -11,6 +11,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Eye, Loader2, Image as ImageIcon, ArrowUp, ArrowDown, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -48,6 +49,32 @@ export default function BannersManagementPage() {
   useEffect(() => {
     fetchBanners();
   }, []);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isDialogOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [isDialogOpen]);
 
   async function fetchBanners() {
     try {
@@ -503,7 +530,7 @@ export default function BannersManagementPage() {
                     </Button>
                   </div>
 
-                  <div className="relative w-32 h-20 rounded overflow-hidden flex-shrink-0">
+                  <div className="relative w-32 h-20 rounded overflow-hidden shrink-0">
                     <Image
                       src={banner.image || '/placeholder.svg'}
                       alt={banner.title}
@@ -568,20 +595,46 @@ export default function BannersManagementPage() {
       </Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingBanner ? 'Edit Banner' : 'Add New Banner'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingBanner
-                ? 'Update the banner information below'
-                : 'Create a new banner for the homepage hero section'}
-            </DialogDescription>
-          </DialogHeader>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} modal={true}>
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault();
+            setIsDialogOpen(false);
+          }}
+        >
+          <div className="px-6 pt-6 pb-4 border-b shrink-0 relative">
+            <DialogHeader>
+              <DialogTitle>
+                {editingBanner ? 'Edit Banner' : 'Add New Banner'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingBanner
+                  ? 'Update the banner information below'
+                  : 'Create a new banner for the homepage hero section'}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
 
-          <div className="space-y-6 mt-4">
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain px-6 py-4" 
+            style={{ 
+              maxHeight: 'calc(90vh - 140px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
+          <div className="space-y-6">
             {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
@@ -828,6 +881,7 @@ export default function BannersManagementPage() {
                 )}
               </Button>
             </div>
+          </div>
           </div>
         </DialogContent>
       </Dialog>

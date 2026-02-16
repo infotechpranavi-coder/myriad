@@ -19,6 +19,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -27,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Eye, Trash2, Loader2 } from 'lucide-react';
+import { Eye, Trash2, Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function BookingsPage() {
@@ -42,6 +43,32 @@ export default function BookingsPage() {
     fetchRoomBookings();
     fetchRestaurantBookings();
   }, []);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (viewingRoomBooking !== null || viewingRestaurantBooking !== null) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [viewingRoomBooking, viewingRestaurantBooking]);
 
   async function fetchRoomBookings() {
     try {
@@ -433,14 +460,36 @@ export default function BookingsPage() {
       </Card>
 
       {/* View Room Booking Dialog */}
-      <Dialog open={viewingRoomBooking !== null} onOpenChange={(open) => !open && setViewingRoomBooking(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Room Booking Details</DialogTitle>
-            <DialogDescription>
-              View complete booking information
-            </DialogDescription>
-          </DialogHeader>
+      <Dialog open={viewingRoomBooking !== null} onOpenChange={(open) => !open && setViewingRoomBooking(null)} modal={true}>
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+            <DialogHeader>
+              <DialogTitle>Room Booking Details</DialogTitle>
+              <DialogDescription>
+                View complete booking information
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain px-6 py-4" 
+            style={{ 
+              maxHeight: 'calc(90vh - 140px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
           {viewingRoomBooking && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -544,14 +593,36 @@ export default function BookingsPage() {
       </Dialog>
 
       {/* View Restaurant Booking Dialog */}
-      <Dialog open={viewingRestaurantBooking !== null} onOpenChange={(open) => !open && setViewingRestaurantBooking(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Restaurant Booking Details</DialogTitle>
-            <DialogDescription>
-              View complete booking information
-            </DialogDescription>
-          </DialogHeader>
+      <Dialog open={viewingRestaurantBooking !== null} onOpenChange={(open) => !open && setViewingRestaurantBooking(null)} modal={true}>
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+            <DialogHeader>
+              <DialogTitle>Restaurant Booking Details</DialogTitle>
+              <DialogDescription>
+                View complete booking information
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain px-6 py-4" 
+            style={{ 
+              maxHeight: 'calc(90vh - 140px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
+          >
           {viewingRestaurantBooking && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -641,6 +712,7 @@ export default function BookingsPage() {
               </div>
             </div>
           )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
