@@ -8,6 +8,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Increase body size limit for file uploads (10MB)
+export const maxDuration = 60;
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -28,10 +32,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (max 5MB to avoid server limits)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
       return NextResponse.json(
-        { error: 'File size must be less than 10MB' },
+        { error: `File size (${sizeInMB}MB) exceeds the maximum allowed size of 5MB. Please compress or resize the image.` },
         { status: 400 }
       );
     }

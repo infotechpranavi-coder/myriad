@@ -5,7 +5,7 @@ import { Room } from '@/lib/models/room';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Loader2, X, Image as ImageIcon, Eye, Save } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, X, Image as ImageIcon, Eye, Save, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Booking } from '@/lib/models/booking';
 import {
@@ -64,6 +64,7 @@ export default function RoomsManagementPage() {
   const [addons, setAddons] = useState<Array<{ name: string; price: string }>>([]);
   const [goibiboOffers, setGoibiboOffers] = useState<Array<{ title: string; description: string }>>([]);
   const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
+  const [galleryUploadError, setGalleryUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRooms();
@@ -250,6 +251,7 @@ export default function RoomsManagementPage() {
     setNewImageUrl('');
     setAddons([]);
     setGoibiboOffers([]);
+    setGalleryUploadError(null);
     setIsDialogOpen(true);
   };
 
@@ -298,42 +300,90 @@ export default function RoomsManagementPage() {
     if (!files || files.length === 0) return;
 
     setUploadingGalleryImage(true);
+    setGalleryUploadError(null); // Clear previous errors
+    
+    // Validate files before uploading
+    const validFiles: File[] = [];
+    const invalidFiles: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        invalidFiles.push(`${file.name} (not an image)`);
+        continue;
+      }
+
+      // Validate file size (max 5MB to avoid 413 errors)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+        invalidFiles.push(`${file.name} (${sizeInMB}MB - max 5MB)`);
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    // Show warnings for invalid files in modal
+    if (invalidFiles.length > 0) {
+      const errorMsg = `Skipped ${invalidFiles.length} file(s): ${invalidFiles.join(', ')}`;
+      setGalleryUploadError(errorMsg);
+      toast({
+        title: 'Warning',
+        description: errorMsg,
+        variant: 'destructive',
+      });
+    }
+
+    if (validFiles.length === 0) {
+      setUploadingGalleryImage(false);
+      e.target.value = '';
+      return;
+    }
     
     try {
       const uploadPromises: Promise<string>[] = [];
+      const uploadErrors: string[] = [];
       
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
         
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          continue;
-        }
-
-        // Validate file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-          continue;
-        }
-
         // Upload to Cloudinary
         const uploadPromise = (async () => {
           try {
             const uploadFormData = new FormData();
             uploadFormData.append('file', file);
 
-            const response = await fetch('/api/upload', {
+            const response = await fetch('/api/upload?folder=myriad-hotel/rooms', {
               method: 'POST',
               body: uploadFormData,
             });
 
             if (!response.ok) {
-              const error = await response.json();
-              throw new Error(error.error || 'Upload failed');
+              // Handle 413 error specifically
+              if (response.status === 413) {
+                throw new Error(`File "${file.name}" is too large. Maximum size is 5MB.`);
+              }
+              
+              // Try to parse error message
+              let errorMessage = `Upload failed for "${file.name}"`;
+              try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+              } catch {
+                // If response is not JSON, use status text
+                errorMessage = `Upload failed: ${response.statusText || 'File too large'}`;
+              }
+              throw new Error(errorMessage);
             }
 
             const data = await response.json();
             return data.url;
           } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : `Failed to upload ${file.name}`;
+            uploadErrors.push(errorMessage);
             console.error(`Failed to upload image ${i + 1}:`, error);
             throw error;
           }
@@ -342,7 +392,25 @@ export default function RoomsManagementPage() {
         uploadPromises.push(uploadPromise);
       }
 
-      const uploadedUrls = await Promise.all(uploadPromises);
+      const results = await Promise.allSettled(uploadPromises);
+      const uploadedUrls: string[] = [];
+      const allErrors: string[] = [];
+      
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          uploadedUrls.push(result.value);
+        } else {
+          const errorMsg = result.reason instanceof Error 
+            ? result.reason.message 
+            : `Failed to upload ${validFiles[index].name}`;
+          allErrors.push(errorMsg);
+        }
+      });
+      
+      // Combine validation errors with upload errors
+      if (invalidFiles.length > 0) {
+        allErrors.unshift(...invalidFiles.map(f => `Skipped: ${f}`));
+      }
       
       if (uploadedUrls.length > 0) {
         setImageUrls([...imageUrls, ...uploadedUrls]);
@@ -351,11 +419,29 @@ export default function RoomsManagementPage() {
           description: `${uploadedUrls.length} image(s) uploaded successfully`,
         });
       }
+      
+      // Display errors in modal
+      if (allErrors.length > 0) {
+        const errorMessage = allErrors.length === 1 
+          ? allErrors[0]
+          : `${allErrors.length} error(s): ${allErrors.slice(0, 3).join('; ')}${allErrors.length > 3 ? ` and ${allErrors.length - 3} more...` : ''}`;
+        setGalleryUploadError(errorMessage);
+        
+        toast({
+          title: 'Upload Errors',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      } else {
+        setGalleryUploadError(null); // Clear errors on success
+      }
     } catch (error) {
       console.error('Upload error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload images';
+      setGalleryUploadError(errorMessage);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to upload images',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -521,6 +607,9 @@ export default function RoomsManagementPage() {
           onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) {
+              setGalleryUploadError(null);
+            }
+            if (!open) {
               // Reset gallery when dialog closes
               setImageUrls([]);
               setNewImageUrl('');
@@ -654,11 +743,36 @@ export default function RoomsManagementPage() {
                       disabled={uploadingGalleryImage}
                       className="cursor-pointer h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Maximum file size: 5MB per image. Supported formats: JPG, PNG, WebP
+                    </p>
                     {uploadingGalleryImage && (
                       <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
                         <Loader2 className="w-3 h-3 animate-spin" />
                         Uploading images...
                       </p>
+                    )}
+                    {galleryUploadError && (
+                      <div className="mt-2 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                        <div className="flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-xs font-medium text-destructive mb-1">Upload Error</p>
+                            <p className="text-xs text-destructive/90 whitespace-pre-wrap break-words">
+                              {galleryUploadError}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 shrink-0"
+                            onClick={() => setGalleryUploadError(null)}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
                     )}
                   </div>
 
