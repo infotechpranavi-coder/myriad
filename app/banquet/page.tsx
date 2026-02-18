@@ -266,63 +266,6 @@ export default function BanquetPage() {
         </div>
       </section>
 
-      {/* Services & Support */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <ScrollAnimationWrapper animation="fadeUp">
-            <h2 className="text-4xl font-serif font-bold text-primary mb-12 text-center text-balance">
-              Complete Event Solutions
-            </h2>
-          </ScrollAnimationWrapper>
-          <div className="grid md:grid-cols-2 gap-12">
-            <ScrollAnimationWrapper animation="slideInLeft" delay={100}>
-              <div>
-                <h3 className="text-2xl font-serif font-bold text-primary mb-6">
-                  Catering Services
-                </h3>
-                <p className="text-foreground/80 mb-6 leading-relaxed">
-                  Our award-winning culinary team can create bespoke menus tailored to your event. From elegant cocktail receptions to multi-course dinners, we deliver exceptional cuisine with impeccable service.
-                </p>
-                <ul className="space-y-3">
-                  {[
-                    'Customized menus',
-                    'Dietary accommodations',
-                    'Bar service management',
-                    'Professional waitstaff',
-                  ].map((service) => (
-                    <li key={service} className="flex items-center gap-2 text-foreground/80">
-                      <span className="text-primary">•</span> {service}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </ScrollAnimationWrapper>
-            <ScrollAnimationWrapper animation="slideInRight" delay={200}>
-              <div>
-                <h3 className="text-2xl font-serif font-bold text-primary mb-6">
-                  Event Planning & Coordination
-                </h3>
-                <p className="text-foreground/80 mb-6 leading-relaxed">
-                  Our experienced event planners will handle every detail of your event, from initial concept to execution. We ensure flawless coordination and exceed expectations.
-                </p>
-                <ul className="space-y-3">
-                  {[
-                    'Dedicated event manager',
-                    'Floor planning assistance',
-                    'Vendor coordination',
-                    'Day-of execution',
-                  ].map((service) => (
-                    <li key={service} className="flex items-center gap-2 text-foreground/80">
-                      <span className="text-primary">•</span> {service}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </ScrollAnimationWrapper>
-          </div>
-        </div>
-      </section>
-
       {/* Gallery Section */}
       {galleryImages.length > 0 && (
       <section className="py-20 px-4 bg-background">

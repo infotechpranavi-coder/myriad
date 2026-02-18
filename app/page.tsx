@@ -181,16 +181,19 @@ export default function Home() {
               quality={95}
               sizes="100vw"
             />
-            <div className="relative z-10 text-center text-white px-4">
-              <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
-                The Myriad Hotel
-              </h1>
-              <p className="text-xl md:text-2xl mb-8 font-light animate-fade-up animate-delay-200">
-                Experience Timeless Luxury
-              </p>
-              <Link href="/rooms" className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 animate-fade-up animate-delay-300">
-                Reserve Your Stay
-              </Link>
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/30 to-transparent" />
+            <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-4">
+              <div className="min-h-[200px] flex flex-col justify-center w-full">
+                <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance">
+                  The Myriad Hotel
+                </h1>
+                <p className="text-xl md:text-2xl mb-10 font-light">
+                  Experience Timeless Luxury
+                </p>
+                <Link href="/rooms" className="inline-block bg-primary text-primary-foreground px-3 py-2 rounded text-base font-medium mx-auto">
+                  Reserve Your Stay
+                </Link>
+              </div>
             </div>
           </div>
         ) : allSliderImages.length > 1 ? (
@@ -215,21 +218,21 @@ export default function Home() {
                       quality={95}
                       sizes="100vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/30 to-transparent" />
                     <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-4">
-                      <div>
-                        <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
+                      <div className="min-h-[200px] flex flex-col justify-center w-full">
+                        <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance">
                           {slide.banner.title || 'The Myriad Hotel'}
                         </h1>
                         {slide.banner.subtitle && (
-                          <p className="text-xl md:text-2xl mb-8 font-light animate-fade-up animate-delay-200">
+                          <p className="text-xl md:text-2xl mb-10 font-light">
                             {slide.banner.subtitle}
                           </p>
                         )}
                         {(slide.banner.link || slide.banner.buttonText) && (
                           <Link
                             href={slide.banner.link || '/rooms'}
-                            className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 animate-fade-up animate-delay-300"
+                            className="inline-block bg-primary text-primary-foreground px-3 py-2 rounded text-base font-medium mx-auto"
                           >
                             {slide.banner.buttonText || 'Reserve Your Stay'}
                           </Link>
@@ -254,21 +257,21 @@ export default function Home() {
               quality={95}
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/30 to-transparent" />
             <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-4">
-              <div>
-                <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
+              <div className="min-h-[200px] flex flex-col justify-center w-full">
+                <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance">
                   {allSliderImages[0].banner.title || 'The Myriad Hotel'}
                 </h1>
                 {allSliderImages[0].banner.subtitle && (
-                  <p className="text-xl md:text-2xl mb-8 font-light animate-fade-up animate-delay-200">
+                  <p className="text-xl md:text-2xl mb-10 font-light">
                     {allSliderImages[0].banner.subtitle}
                   </p>
                 )}
                 {(allSliderImages[0].banner.link || allSliderImages[0].banner.buttonText) && (
                   <Link
                     href={allSliderImages[0].banner.link || '/rooms'}
-                    className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 animate-fade-up animate-delay-300"
+                    className="inline-block bg-primary text-primary-foreground px-3 py-2 rounded text-base font-medium mx-auto"
                   >
                     {allSliderImages[0].banner.buttonText || 'Reserve Your Stay'}
                   </Link>
@@ -287,22 +290,25 @@ export default function Home() {
               quality={95}
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/30 to-transparent" />
             <div className="relative z-10 h-full flex items-center justify-center text-center text-white px-4">
-              <div>
-                <h1 className="text-6xl md:text-7xl font-serif font-bold mb-4 text-balance animate-fade-up">
-                  The Myriad Hotel
-                </h1>
-                <p className="text-xl md:text-2xl mb-8 font-light animate-fade-up animate-delay-200">
-                  Experience Timeless Luxury
-                </p>
-                <Link
-                  href="/rooms"
-                  className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded text-lg font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 animate-fade-up animate-delay-300"
-                >
-                  Reserve Your Stay
-                </Link>
-              </div>
+            <div className="flex flex-col items-center text-center space-y-6 w-full">
+  <h1 className="text-6xl md:text-7xl font-serif font-bold text-balance">
+    The Myriad Hotel
+  </h1>
+
+  <p className="text-xl md:text-2xl font-light">
+    Experience Timeless Luxury
+  </p>
+
+  <Link
+    href="/rooms"
+                    className="mt-4 inline-block bg-primary text-primary-foreground px-6 py-3 rounded-md text-base font-medium mx-auto"
+  >
+    Reserve Your Stay
+  </Link>
+</div>
+
             </div>
           </div>
         )}
@@ -409,7 +415,7 @@ export default function Home() {
               restaurants.map((restaurant, index) => (
                 <ScrollAnimationWrapper key={restaurant.id || restaurant._id || index} animation="fadeUp" delay={index * 100}>
                   <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full flex flex-col">
-                    <div className="relative h-48 overflow-hidden bg-muted flex-shrink-0">
+                    <div className="relative h-48 overflow-hidden bg-muted shrink-0">
                       <Image
                         src={restaurant.image || (restaurant.gallery && restaurant.gallery.length > 0 ? restaurant.gallery[0] : "/placeholder.jpg")}
                         alt={`${restaurant.name} - ${restaurant.cuisine}`}

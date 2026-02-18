@@ -267,51 +267,6 @@ export default function RestaurantDetailPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background border-b">
-        <div className="max-w-7xl mx-auto flex items-center gap-4 px-4 py-4">
-          <button
-            onClick={() => router.push('/restaurants')}
-            className="p-2 rounded-full hover:bg-muted"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div className="flex-1 flex items-center gap-4">
-            {restaurant.slug === 'urban-dhaba' && (
-              <Image
-                src="/Urban Dhaba.png"
-                alt="Urban Dhaba Logo"
-                width={250}
-                height={100}
-                className="h-16 md:h-20 w-auto object-contain"
-              />
-            )}
-            {restaurant.slug === 'winking-owl' && (
-              <Image
-                src="/Winkingg Owl.png"
-                alt="Winkingg Owl Logo"
-                width={250}
-                height={100}
-                className="h-16 md:h-20 w-auto object-contain"
-              />
-            )}
-            {restaurant.slug === 'coastal-seafood' && (
-              <Image
-                src="/Coastal Sea Food.png"
-                alt="Coastal Sea Food Logo"
-                width={250}
-                height={100}
-                className="h-16 md:h-20 w-auto object-contain"
-              />
-            )}
-            <div>
-              <h1 className="text-lg font-bold">{restaurant.name}</h1>
-              <p className="text-xs text-muted-foreground">{restaurant.cuisine}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Hero Section - Logo Only */}
       <div className="relative h-[40vh] min-h-[300px] w-full bg-muted/30 flex items-center justify-center">
         <div className="text-center">
@@ -325,7 +280,6 @@ export default function RestaurantDetailPage() {
                 className="h-32 md:h-40 w-auto object-contain mx-auto mb-4"
                 priority
               />
-              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
             </div>
           ) : restaurant.slug === 'winking-owl' ? (
             <div>
@@ -337,7 +291,6 @@ export default function RestaurantDetailPage() {
                 className="h-32 md:h-40 w-auto object-contain mx-auto mb-4"
                 priority
               />
-              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
             </div>
           ) : restaurant.slug === 'coastal-seafood' ? (
             <div>
@@ -349,12 +302,10 @@ export default function RestaurantDetailPage() {
                 className="h-32 md:h-40 w-auto object-contain mx-auto mb-4"
                 priority
               />
-              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
             </div>
           ) : (
             <div>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-2">{restaurant.name}</h1>
-              <p className="text-lg md:text-xl text-foreground/80">{restaurant.cuisine}</p>
             </div>
           )}
         </div>

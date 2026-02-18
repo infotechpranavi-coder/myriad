@@ -21,8 +21,6 @@ const amenityIcons = {
   'Jacuzzi': <Waves size={20} />,
 };
 
-import { RoomHero } from '@/components/RoomHero';
-
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,9 +65,6 @@ export default function RoomsPage() {
 
   return (
     <main className="bg-background">
-      {/* Hero Slider */}
-      <RoomHero />
-
       {/* Rooms Sections */}
       <section className="bg-background">
         {rooms.map((room, index) => (

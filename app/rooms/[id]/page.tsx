@@ -422,39 +422,6 @@ export default function RoomDetailPage() {
                         </div>
                     </div>
 
-                    {/* IMAGE GALLERY */}
-                    {roomImages.length > 0 && (
-                        <Carousel>
-                            <CarouselContent>
-                                {roomImages.map((img, i) => (
-                                    <CarouselItem key={i}>
-                                        {img.startsWith('/') ? (
-                                            <Image
-                                                src={img}
-                                                alt={roomName}
-                                                width={900}
-                                                height={500}
-                                                className="rounded-lg object-cover"
-                                            />
-                                        ) : (
-                                            <img
-                                                src={img}
-                                                alt={roomName}
-                                                className="w-full h-[500px] rounded-lg object-cover"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.style.display = 'none';
-                                                }}
-                                            />
-                                        )}
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious />
-                            <CarouselNext />
-                        </Carousel>
-                    )}
-
                     {/* GALLERY SECTION */}
                     {roomImages.length > 0 && (
                         <div className="bg-background border rounded-lg p-6">
