@@ -449,7 +449,7 @@ export default function TestimonialsManagementPage() {
           className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+          <div className="px-6 pt-6 pb-4 border-b shrink-0 relative">
             <DialogHeader>
               <DialogTitle>
                 {editingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial'}
