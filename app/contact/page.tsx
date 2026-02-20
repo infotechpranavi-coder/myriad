@@ -95,7 +95,7 @@ export default function ContactPage() {
               </h2>
               <div className="space-y-8">
                 <div className="flex gap-6">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-primary">
                       <MapPin className="text-primary-foreground" size={24} />
                     </div>
@@ -113,7 +113,7 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex gap-6">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-primary">
                       <Phone className="text-primary-foreground" size={24} />
                     </div>
@@ -131,7 +131,7 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex gap-6">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-primary">
                       <Mail className="text-primary-foreground" size={24} />
                     </div>
@@ -141,15 +141,13 @@ export default function ContactPage() {
                       Email
                     </h3>
                     <p className="text-foreground/70">
-                      General: info@themyriad.com<br />
-                      Reservations: book@themyriad.com<br />
-                      Events: events@themyriad.com
+                      Support@myriad.net.in
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-6">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-primary">
                       <Clock className="text-primary-foreground" size={24} />
                     </div>

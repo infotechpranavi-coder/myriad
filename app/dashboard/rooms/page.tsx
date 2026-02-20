@@ -53,6 +53,7 @@ export default function RoomsManagementPage() {
     room: '',
     about: '',
     amenities: '',
+    location: '',
     basePrice: '',
     taxes: '',
     serviceFees: '',
@@ -203,6 +204,7 @@ export default function RoomsManagementPage() {
       room: room.room || '',
       about: room.about || room.description || '',
       amenities: room.amenities.join(', '),
+      location: room.location || '',
       basePrice: room.priceSummary?.basePrice?.toString() || room.price?.toString() || '',
       taxes: room.priceSummary?.taxes?.toString() || '',
       serviceFees: room.priceSummary?.serviceFees?.toString() || '',
@@ -241,6 +243,7 @@ export default function RoomsManagementPage() {
       room: '',
       about: '',
       amenities: '',
+      location: '',
       basePrice: '',
       taxes: '',
       serviceFees: '',
@@ -499,6 +502,7 @@ export default function RoomsManagementPage() {
         room: formData.room || undefined,
         about: formData.about || undefined,
         amenities: formData.amenities.split(',').map((a) => a.trim()).filter(Boolean),
+        location: formData.location || undefined,
         gallery: imageUrls.filter(Boolean),
         priceSummary: {
           basePrice,
@@ -724,6 +728,16 @@ export default function RoomsManagementPage() {
                   value={formData.amenities}
                   onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
                   placeholder="Double Bed, WiFi, TV, AC"
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Location</label>
+                <Input
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="Thane, Mumbai"
                 />
               </div>
 

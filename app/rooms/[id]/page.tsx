@@ -120,26 +120,46 @@ export default function RoomDetailPage() {
     useEffect(() => {
         async function fetchRoom() {
             try {
+                if (!params.id) {
+                    console.error('No room ID provided');
+                    setRoom(null);
+                    setLoading(false);
+                    return;
+                }
+
                 const response = await fetch(`/api/rooms/${params.id}`);
                 if (response.ok) {
                     const data = await response.json();
                     setRoom(data);
                 } else {
                     const errorData = await response.json().catch(() => ({}));
-                    console.error('Failed to fetch room:', errorData.error || response.statusText);
+                    const errorMessage = errorData.error || response.statusText || 'Room not found';
+                    console.error('Failed to fetch room:', errorMessage, 'ID:', params.id);
                     setRoom(null);
+                    toast({
+                        title: 'Room Not Found',
+                        description: `The room with ID "${params.id}" could not be found.`,
+                        variant: 'destructive',
+                    });
                 }
             } catch (error) {
                 console.error('Error fetching room:', error);
                 setRoom(null);
+                toast({
+                    title: 'Error',
+                    description: 'Failed to load room details. Please try again later.',
+                    variant: 'destructive',
+                });
             } finally {
                 setLoading(false);
             }
         }
         if (params.id) {
             fetchRoom();
+        } else {
+            setLoading(false);
         }
-    }, [params.id]);
+    }, [params.id, toast]);
 
     if (loading) {
         return (
@@ -204,13 +224,6 @@ export default function RoomDetailPage() {
             {/* Top Header */}
             <div className="sticky top-0 z-50 bg-background border-b">
                 <div className="max-w-7xl mx-auto flex items-center gap-4 px-4 py-4">
-                    <button
-                        onClick={() => router.push('/rooms')}
-                        className="p-2 rounded-full hover:bg-muted"
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-
                     <div className="flex-1">
                         <h1 className="text-lg font-bold">The Myriad Business Hotel</h1>
                         <p className="text-xs text-muted-foreground">
@@ -346,10 +359,12 @@ export default function RoomDetailPage() {
 
                             <div className="flex-1">
                                 <h2 className="font-bold text-lg">{roomName}</h2>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <MapPin size={14} />
-                                    Thane, Mumbai
-                                </div>
+                                {room.location && (
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <MapPin size={14} />
+                                        {room.location}
+                                    </div>
+                                )}
 
                                 <div className="flex items-center gap-2 mt-2">
                                     <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">

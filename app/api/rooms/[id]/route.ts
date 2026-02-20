@@ -18,26 +18,61 @@ export async function GET(
     
     console.log('Fetching room with id:', id);
     
-    // Try to find by custom id field first (since we're using string IDs like "1", "2", "3")
-    let room = await db.collection<Room>(COLLECTION_NAME).findOne({ id: id });
+    let room: Room | null = null;
     
-    // If not found by custom id, try MongoDB _id
+    // Try multiple strategies to find the room
+    // 1. Try by custom id field (string IDs like "1", "2", "3")
+    if (id) {
+      room = await db.collection<Room>(COLLECTION_NAME).findOne({ id: id });
+    }
+    
+    // 2. If not found and id looks like MongoDB ObjectId, try by _id
     if (!room && ObjectId.isValid(id)) {
-      room = await db.collection<Room>(COLLECTION_NAME).findOne({ _id: new ObjectId(id) });
+      try {
+        room = await db.collection<Room>(COLLECTION_NAME).findOne({ _id: new ObjectId(id) });
+      } catch (e) {
+        console.log('Error trying ObjectId lookup:', e);
+      }
+    }
+    
+    // 3. Try finding by _id as string (in case it's stored as string)
+    if (!room) {
+      room = await db.collection<Room>(COLLECTION_NAME).findOne({ _id: id as any });
+    }
+    
+    // 4. Try finding by converting _id string to ObjectId if possible
+    if (!room && id && id.length === 24) {
+      try {
+        const objectId = new ObjectId(id);
+        room = await db.collection<Room>(COLLECTION_NAME).findOne({ _id: objectId });
+      } catch (e) {
+        // Not a valid ObjectId format, continue
+      }
     }
     
     if (!room) {
       console.log('Room not found with id:', id);
       // Log all available room IDs for debugging
       const allRooms = await db.collection<Room>(COLLECTION_NAME).find({}).toArray();
-      console.log('Available room IDs:', allRooms.map(r => ({ id: r.id, _id: r._id })));
+      console.log('Available room IDs:', allRooms.map(r => ({ 
+        id: r.id, 
+        _id: r._id?.toString() || r._id,
+        title: r.title || r.name 
+      })));
       return NextResponse.json(
-        { error: 'Room not found' },
+        { error: 'Room not found', id: id },
         { status: 404 }
       );
     }
     
-    return NextResponse.json(room, { status: 200 });
+    // Ensure the room has both id and _id for consistency
+    const roomResponse = {
+      ...room,
+      id: room.id || room._id?.toString() || (room._id as any)?.toString?.() || String(room._id),
+      _id: room._id?.toString() || room._id
+    };
+    
+    return NextResponse.json(roomResponse, { status: 200 });
   } catch (error) {
     console.error('Error fetching room:', error);
     return NextResponse.json(

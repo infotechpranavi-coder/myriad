@@ -9,6 +9,7 @@ export interface Room {
   gallery?: string[]; // Gallery images
   about?: string; // About the room
   amenities: string[]; // Room amenities
+  location?: string; // Room location (e.g., "Thane, Mumbai")
   priceSummary?: {
     basePrice: number;
     taxes?: number;

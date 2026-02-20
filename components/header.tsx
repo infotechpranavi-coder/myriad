@@ -10,11 +10,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Room } from '@/lib/models/room';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isRestaurantMenuOpen, setIsRestaurantMenuOpen] = useState(false);
+  const [isRoomsMenuOpen, setIsRoomsMenuOpen] = useState(false);
+  const [rooms, setRooms] = useState<Room[]>([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,9 +28,23 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const response = await fetch('/api/rooms');
+        if (response.ok) {
+          const data = await response.json();
+          setRooms(data);
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      }
+    }
+    fetchRooms();
+  }, []);
+
   const navItems = [
     { href: '/', label: 'Home' },
-    { href: '/rooms', label: 'Rooms' },
     { href: '/banquet', label: 'Banquet Hall' },
   ];
 
@@ -69,6 +86,35 @@ export default function Header() {
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-3/4 transition-all duration-300" />
               </Link>
             ))}
+            
+            {/* Rooms Dropdown */}
+            {rooms.length > 0 && (
+              <DropdownMenu onOpenChange={setIsRoomsMenuOpen}>
+                <DropdownMenuTrigger
+                  className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group flex items-center gap-1 outline-none transition-all duration-300"
+                >
+                  <span className="relative z-10">Rooms</span>
+                  <ChevronDown 
+                    size={14} 
+                    className={`relative z-10 transition-transform duration-300 ${isRoomsMenuOpen ? 'rotate-180' : ''}`} 
+                  />
+                  <span className="absolute inset-0 bg-primary/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-3/4 transition-all duration-300" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-[220px] mt-2 border-2 border-primary/20 shadow-xl bg-background/95 backdrop-blur-sm">
+                  {rooms.map((room) => (
+                    <DropdownMenuItem key={room.id || room._id} asChild>
+                      <Link
+                        href={`/rooms/${room.id || room._id}`}
+                        className="cursor-pointer font-serif text-sm py-2.5 px-4 hover:bg-primary/5 transition-colors duration-200"
+                      >
+                        {room.name || room.title}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             
             {/* Restaurants Dropdown */}
             <DropdownMenu onOpenChange={setIsRestaurantMenuOpen}>
@@ -142,6 +188,39 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
+            
+            {/* Mobile Rooms Dropdown */}
+            {rooms.length > 0 && (
+              <div className="px-4">
+                <button
+                  onClick={() => setIsRoomsMenuOpen(!isRoomsMenuOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-foreground/90 font-serif text-sm uppercase tracking-wider hover:bg-primary/5 hover:text-primary transition-all duration-200 border-l-2 border-transparent hover:border-primary"
+                >
+                  Rooms
+                  <ChevronDown 
+                    size={16} 
+                    className={`transition-transform duration-300 ${isRoomsMenuOpen ? 'rotate-180' : ''}`} 
+                  />
+                </button>
+                {isRoomsMenuOpen && (
+                  <div className="ml-6 mt-2 space-y-1 border-l-2 border-primary/20 pl-4">
+                    {rooms.map((room) => (
+                      <Link
+                        key={room.id || room._id}
+                        href={`/rooms/${room.id || room._id}`}
+                        className="block px-4 py-2 text-foreground/70 hover:text-primary hover:bg-primary/5 rounded transition-all duration-200 text-sm font-serif"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsRoomsMenuOpen(false);
+                        }}
+                      >
+                        {room.name || room.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* Mobile Restaurants Dropdown */}
             <div className="px-4">

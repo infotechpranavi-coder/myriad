@@ -414,7 +414,7 @@ export default function BanquetGalleryManagementPage() {
                     </div>
                   </div>
 
-                  <div className="relative w-full h-48 rounded overflow-hidden flex-shrink-0">
+                  <div className="relative w-full h-48 rounded overflow-hidden shrink-0">
                     <Image
                       src={image.image || '/placeholder.svg'}
                       alt={image.title || 'Gallery image'}
@@ -460,7 +460,7 @@ export default function BanquetGalleryManagementPage() {
           className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
           onInteractOutside={(e) => e.preventDefault()}
         >
-          <div className="px-6 pt-6 pb-4 border-b flex-shrink-0 relative">
+          <div className="px-6 pt-6 pb-4 border-b shrink-0 relative">
             <DialogHeader>
               <DialogTitle>
                 {editingImage ? 'Edit Gallery Image' : 'Add New Gallery Image'}

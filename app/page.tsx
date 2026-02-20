@@ -74,8 +74,8 @@ export default function Home() {
       const response = await fetch('/api/rooms');
       if (response.ok) {
         const data = await response.json();
-        // Limit to first 3 rooms for the signature section
-        setRooms(data.slice(0, 3));
+        // Fetch all rooms for the carousel
+        setRooms(data);
       } else {
         console.error('Failed to fetch rooms');
       }
@@ -324,69 +324,88 @@ export default function Home() {
               Our Signature Rooms
             </h2>
           </ScrollAnimationWrapper>
-          <div className="grid md:grid-cols-3 gap-8">
-            {rooms.length === 0 ? (
-              <div className="col-span-3 text-center py-12 text-muted-foreground">
-                <p>No rooms available at the moment.</p>
-              </div>
-            ) : (
-              rooms.map((room, index) => (
-                <ScrollAnimationWrapper key={room.id || room._id || index} animation="scaleIn" delay={index * 100}>
-                  <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2">
-                    <div className="relative h-64 overflow-hidden">
-                      <Image
-                        src={room.images && room.images.length > 0 ? room.images[0] : (room.gallery && room.gallery.length > 0 ? room.gallery[0] : "/placeholder.svg")}
-                        alt={room.name || room.title || 'Room image'}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                        quality={90}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-2xl font-serif font-bold text-primary mb-2">{room.name || room.title}</h3>
-                      <div className="flex items-center gap-1 mb-4">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={16} className="fill-accent text-accent" />
-                        ))}
+          {rooms.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No rooms available at the moment.</p>
+            </div>
+          ) : (
+            <Carousel
+              opts={{
+                align: 'start',
+                loop: true,
+              }}
+              plugins={[plugin.current]}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {rooms.map((room, index) => (
+                  <CarouselItem key={room.id || room._id || index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                    <ScrollAnimationWrapper animation="scaleIn" delay={index * 100}>
+                      <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full">
+                        <div className="relative h-64 overflow-hidden">
+                          <Image
+                            src={room.images && room.images.length > 0 ? room.images[0] : (room.gallery && room.gallery.length > 0 ? room.gallery[0] : "/placeholder.svg")}
+                            alt={room.name || room.title || 'Room image'}
+                            fill
+                            className="object-cover hover:scale-105 transition-transform duration-300"
+                            quality={90}
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        </div>
+                        <div className="p-6">
+                          <h3 className="text-2xl font-serif font-bold text-primary mb-2">{room.name || room.title}</h3>
+                          {room.location && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                              <MapPin size={14} />
+                              {room.location}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 mb-4">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} size={16} className="fill-accent text-accent" />
+                            ))}
+                          </div>
+                          <ul className="space-y-2 mb-6 text-foreground/70">
+                            {room.amenities && room.amenities.slice(0, 3).map((amenity, i) => (
+                              <li key={i} className="flex items-center gap-2">
+                                <Wifi size={16} /> {amenity}
+                              </li>
+                            ))}
+                            {(!room.amenities || room.amenities.length === 0) && (
+                              <>
+                                <li className="flex items-center gap-2">
+                                  <Wifi size={16} /> High-speed WiFi
+                                </li>
+                                <li className="flex items-center gap-2">
+                                  <Coffee size={16} /> Premium Toiletries
+                                </li>
+                                <li className="flex items-center gap-2">
+                                  <Dumbbell size={16} /> City View Balcony
+                                </li>
+                              </>
+                            )}
+                          </ul>
+                          <div className="flex justify-between items-center">
+                            <span className="text-2xl font-bold text-primary">
+                              ₹{(room.price || room.priceSummary?.basePrice || 0).toLocaleString()}
+                            </span>
+                            <Link
+                              href={`/rooms/${room.id || room._id}`}
+                              className="bg-primary text-primary-foreground px-6 py-2 rounded transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
+                            >
+                              View Details
+                            </Link>
+                          </div>
+                        </div>
                       </div>
-                      <ul className="space-y-2 mb-6 text-foreground/70">
-                        {room.amenities && room.amenities.slice(0, 3).map((amenity, i) => (
-                          <li key={i} className="flex items-center gap-2">
-                            <Wifi size={16} /> {amenity}
-                          </li>
-                        ))}
-                        {(!room.amenities || room.amenities.length === 0) && (
-                          <>
-                            <li className="flex items-center gap-2">
-                              <Wifi size={16} /> High-speed WiFi
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Coffee size={16} /> Premium Toiletries
-                            </li>
-                            <li className="flex items-center gap-2">
-                              <Dumbbell size={16} /> City View Balcony
-                            </li>
-                          </>
-                        )}
-                      </ul>
-                      <div className="flex justify-between items-center">
-                        <span className="text-2xl font-bold text-primary">
-                          ₹{(room.price || room.priceSummary?.basePrice || 0).toLocaleString()}
-                        </span>
-                        <Link
-                          href={`/rooms/${room.id || room._id}`}
-                          className="bg-primary text-primary-foreground px-6 py-2 rounded transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
-                        >
-                          View Details
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </ScrollAnimationWrapper>
-              ))
-            )}
-          </div>
+                    </ScrollAnimationWrapper>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-0 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
+              <CarouselNext className="right-0 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
+            </Carousel>
+          )}
           <div className="text-center mt-12">
             <Link
               href="/rooms"

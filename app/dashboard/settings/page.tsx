@@ -34,7 +34,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Email</label>
-              <Input type="email" defaultValue="info@myriadhotel.com" />
+              <Input type="email" defaultValue="Support@myriad.net.in" />
             </div>
           </div>
           <Button>Save Changes</Button>

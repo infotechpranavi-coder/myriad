@@ -1,19 +1,48 @@
 'use client';
 
-export default function PrivacyPage() {
-  return (
-    <main className="bg-background">
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl font-serif font-bold text-primary mb-4">
-            Privacy Policy – The Myriad Hotel
-          </h1>
-          <p className="text-foreground/70">Last Updated: March 2026</p>
-        </div>
-      </section>
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
 
-      <section className="py-12 px-4 bg-background">
-        <div className="max-w-4xl mx-auto prose prose-invert">
+interface PrivacyPolicyModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function PrivacyPolicyModal({ open, onOpenChange }: PrivacyPolicyModalProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
+      <DialogContent 
+        className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 [&>button]:hidden"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        <div className="px-6 pt-6 pb-4 border-b shrink-0 relative">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-serif font-bold text-primary">
+              Privacy Policy – The Myriad Hotel
+            </DialogTitle>
+            <DialogDescription className="text-foreground/70 mt-2">
+              Last Updated: March 2026
+            </DialogDescription>
+          </DialogHeader>
+          <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+        </div>
+
+        <div 
+          className="flex-1 overflow-y-auto overscroll-contain px-6 py-6" 
+          style={{ 
+            maxHeight: 'calc(90vh - 100px)',
+            WebkitOverflowScrolling: 'touch'
+          }}
+          onWheel={(e) => {
+            e.stopPropagation();
+          }}
+          onTouchMove={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <div className="space-y-8 text-foreground/80">
             <div>
               <h2 className="text-2xl font-serif font-bold text-primary mb-4">
@@ -218,7 +247,7 @@ export default function PrivacyPage() {
             </div>
           </div>
         </div>
-      </section>
-    </main>
+      </DialogContent>
+    </Dialog>
   );
 }
