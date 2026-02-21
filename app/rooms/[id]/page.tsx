@@ -360,10 +360,10 @@ export default function RoomDetailPage() {
                             <div className="flex-1">
                                 <h2 className="font-bold text-lg">{roomName}</h2>
                                 {room.location && (
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <MapPin size={14} />
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <MapPin size={14} />
                                         {room.location}
-                                    </div>
+                                </div>
                                 )}
 
                                 <div className="flex items-center gap-2 mt-2">

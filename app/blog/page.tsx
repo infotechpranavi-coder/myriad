@@ -190,7 +190,7 @@ export default function BlogPage() {
                     return (a.order || 0) - (b.order || 0);
                   })
                   .map((testimonial) => (
-                    <CarouselItem key={testimonial._id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem key={testimonial._id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                       <div className={`bg-card p-8 rounded-lg border transition-smooth hover:shadow-lg hover:-translate-y-2 h-full ${
                         !testimonial.isActive
                           ? 'border-yellow-500/50 opacity-90'
@@ -203,8 +203,8 @@ export default function BlogPage() {
                             </span>
                           </div>
                         )}
-                        <div className="flex gap-1 mb-4">
-                          {[...Array(testimonial.rating || 5)].map((_, i) => (
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(testimonial.rating || 5)].map((_, i) => (
                             <Star
                               key={i}
                               size={16}
@@ -214,27 +214,27 @@ export default function BlogPage() {
                                   : 'fill-yellow-300 text-yellow-300'
                               }`}
                             />
-                          ))}
-                        </div>
-                        <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
-                        <div className="flex items-center gap-3">
-                          {testimonial.image && (
+                        ))}
+                      </div>
+                      <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
+                      <div className="flex items-center gap-3">
+                        {testimonial.image && (
                             <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0">
-                              <img
-                                src={testimonial.image}
-                                alt={testimonial.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-semibold text-foreground">{testimonial.name}</p>
-                            <p className="text-foreground/60 text-sm">{testimonial.role || 'Guest'}</p>
+                            <img
+                              src={testimonial.image}
+                              alt={testimonial.name}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-foreground">{testimonial.name}</p>
+                            <p className="text-foreground/60 text-sm">{testimonial.role || 'Guest'}</p>
                         </div>
                       </div>
-                    </CarouselItem>
-                  ))}
+                    </div>
+                  </CarouselItem>
+                ))}
               </CarouselContent>
               <CarouselPrevious />
               <CarouselNext />

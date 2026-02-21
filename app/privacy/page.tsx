@@ -148,7 +148,7 @@ export default function PrivacyPage() {
                 <li>Fulfill legal and accounting obligations</li>
                 <li>Resolve disputes and enforce agreements</li>
               </ul>
-            </div>
+              </div>
 
             <div>
               <h2 className="text-2xl font-serif font-bold text-primary mb-4">

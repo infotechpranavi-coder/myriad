@@ -2,15 +2,48 @@
 
 import Link from 'next/link';
 import { Instagram, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PrivacyPolicyModal } from '@/components/PrivacyPolicyModal';
 import { TermsModal } from '@/components/TermsModal';
 import { ContactModal } from '@/components/ContactModal';
+import { Room } from '@/lib/models/room';
+import { Restaurant } from '@/lib/models/restaurant';
 
 export default function Footer() {
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const response = await fetch('/api/rooms');
+        if (response.ok) {
+          const data = await response.json();
+          setRooms(data);
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      }
+    }
+
+    async function fetchRestaurants() {
+      try {
+        const response = await fetch('/api/restaurants');
+        if (response.ok) {
+          const data = await response.json();
+          setRestaurants(data);
+        }
+      } catch (error) {
+        console.error('Error fetching restaurants:', error);
+      }
+    }
+
+    fetchRooms();
+    fetchRestaurants();
+  }, []);
   return (
     <footer className="relative bg-linear-to-b from-foreground to-foreground/95 text-background border-t border-background/10">
       {/* Decorative top border */}
@@ -54,42 +87,30 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-lg mb-6 text-background">Quick Links</h4>
             <ul className="space-y-3">
-              <li>
-                <Link 
-                  href="/rooms" 
-                  className="text-background/70 hover:text-background text-sm flex items-center gap-2 group transition-all duration-200"
-                >
-                  <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                  <span className="group-hover:translate-x-2 transition-transform">Rooms</span>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/restaurants" 
-                  className="text-background/70 hover:text-background text-sm flex items-center gap-2 group transition-all duration-200"
-                >
-                  <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                  <span className="group-hover:translate-x-2 transition-transform">Restaurants</span>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/banquet" 
-                  className="text-background/70 hover:text-background text-sm flex items-center gap-2 group transition-all duration-200"
-                >
-                  <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                  <span className="group-hover:translate-x-2 transition-transform">Banquet Hall</span>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/blog" 
-                  className="text-background/70 hover:text-background text-sm flex items-center gap-2 group transition-all duration-200"
-                >
-                  <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                  <span className="group-hover:translate-x-2 transition-transform">Blog</span>
-                </Link>
-              </li>
+              {/* Rooms */}
+              {rooms.map((room) => (
+                <li key={room.id || room._id}>
+                  <Link 
+                    href={`/rooms/${room.id || room._id}`}
+                    className="text-background/70 hover:text-background text-sm flex items-center gap-2 group transition-all duration-200"
+                  >
+                    <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    <span className="group-hover:translate-x-2 transition-transform">{room.title || room.name}</span>
+                  </Link>
+                </li>
+              ))}
+              {/* Restaurants */}
+              {restaurants.map((restaurant) => (
+                <li key={restaurant.id || restaurant._id}>
+                  <Link 
+                    href={`/restaurants/${restaurant.slug}`}
+                    className="text-background/70 hover:text-background text-sm flex items-center gap-2 group transition-all duration-200"
+                  >
+                    <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    <span className="group-hover:translate-x-2 transition-transform">{restaurant.name}</span>
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -186,7 +207,17 @@ export default function Footer() {
         <div className="border-t border-background/20 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-background/60 text-sm text-center md:text-left">
-              {'©'} {new Date().getFullYear()} The Myriad Hotel. All rights reserved.
+              {'©'} {new Date().getFullYear()} The Myriad Hotel. All rights reserved.{' '}
+              <span className="text-background/50">| Powered by{' '}
+                <a 
+                  href="https://pranaviinfotech.com/lander" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-background/70 hover:text-background transition-colors underline"
+                >
+                  PRANAVI INFOTECH
+                </a>
+              </span>
             </p>
             <div className="flex items-center gap-6 text-sm">
               <button 
