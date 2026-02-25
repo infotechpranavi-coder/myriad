@@ -34,7 +34,41 @@ export default function Header() {
         const response = await fetch('/api/rooms');
         if (response.ok) {
           const data = await response.json();
-          setRooms(data);
+          // Define the desired order sequence
+          const roomOrder = [
+            'Deluxe Room',
+            'Deluxe Twin',
+            'Super Deluxe',
+            'Executive Room',
+            'Executive Suite',
+            'Presidential Suite'
+          ];
+          
+          // Sort rooms based on the defined order
+          const sortedRooms = [...data].sort((a, b) => {
+            const roomNameA = (a.name || a.title || '').trim();
+            const roomNameB = (b.name || b.title || '').trim();
+            
+            const indexA = roomOrder.findIndex(order => 
+              roomNameA.toLowerCase() === order.toLowerCase()
+            );
+            const indexB = roomOrder.findIndex(order => 
+              roomNameB.toLowerCase() === order.toLowerCase()
+            );
+            
+            // If both are in the order list, sort by their position
+            if (indexA !== -1 && indexB !== -1) {
+              return indexA - indexB;
+            }
+            // If only A is in the order list, A comes first
+            if (indexA !== -1) return -1;
+            // If only B is in the order list, B comes first
+            if (indexB !== -1) return 1;
+            // If neither is in the order list, maintain original order
+            return 0;
+          });
+          
+          setRooms(sortedRooms);
         }
       } catch (error) {
         console.error('Error fetching rooms:', error);

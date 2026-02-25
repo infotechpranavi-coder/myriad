@@ -51,6 +51,7 @@ export default function BlogPage() {
     quote: '',
     rating: 5,
     email: '',
+    phone: '',
   });
 
   useEffect(() => {
@@ -83,10 +84,10 @@ export default function BlogPage() {
   async function handleSubmitTestimonial(e: React.FormEvent) {
     e.preventDefault();
     
-    if (!formData.name || !formData.quote) {
+    if (!formData.name || !formData.quote || !formData.phone) {
       toast({
         title: 'Validation Error',
-        description: 'Name and testimonial are required',
+        description: 'Name, testimonial, and phone number are required',
         variant: 'destructive',
       });
       return;
@@ -104,6 +105,8 @@ export default function BlogPage() {
           role: formData.role || 'Guest',
           quote: formData.quote,
           rating: formData.rating,
+          email: formData.email || undefined,
+          phone: formData.phone,
           isActive: false, // User-submitted testimonials need admin approval
         }),
       });
@@ -116,6 +119,7 @@ export default function BlogPage() {
           quote: '',
           rating: 5,
           email: '',
+          phone: '',
         });
         // Open thank you modal
         setShowThankYouModal(true);
@@ -152,23 +156,14 @@ export default function BlogPage() {
   return (
     <main className="bg-background">
       {/* Header */}
-      <section className="py-16 px-4 bg-muted/30">
-        <ScrollAnimationWrapper animation="fadeUp" className="max-w-6xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-primary mb-4 text-balance">
-            Guest Testimonials
-          </h1>
-          <p className="text-xl text-foreground/70 max-w-2xl">
-            Discover what our guests have to say about their experiences at The Myriad Hotel.
-          </p>
-        </ScrollAnimationWrapper>
-      </section>
+      
 
       {/* Testimonials */}
       <section className="py-20 px-4 bg-background">
         <div className="max-w-6xl mx-auto">
           <ScrollAnimationWrapper animation="fadeUp">
             <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-12 text-center text-balance">
-              What Our Guests Say
+            Guest Testimonials
             </h2>
           </ScrollAnimationWrapper>
           {allTestimonials.length > 0 ? (
@@ -321,18 +316,35 @@ export default function BlogPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email (Optional)</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="your.email@example.com"
-                  />
-                  <p className="text-sm text-foreground/60">
-                    Your email will not be published. We may contact you to verify your testimonial.
-                  </p>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email (Optional)</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="your.email@example.com"
+                    />
+                    <p className="text-sm text-foreground/60">
+                      Your email will not be published.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+91 1234567890"
+                      required
+                    />
+                    <p className="text-sm text-foreground/60">
+                      Your phone number will not be published.
+                    </p>
+                  </div>
                 </div>
 
                 <Button

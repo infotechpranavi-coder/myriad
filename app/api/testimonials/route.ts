@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
       quote: body.quote,
       rating: body.rating || 5,
       image: body.image || '',
+      email: body.email || undefined,
+      phone: body.phone || undefined,
       isActive: body.isActive !== undefined ? body.isActive : true,
       order: lastTestimonial ? lastTestimonial.order + 1 : 1,
       createdAt: new Date(),

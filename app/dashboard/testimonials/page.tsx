@@ -39,6 +39,8 @@ export default function TestimonialsManagementPage() {
     quote: '',
     rating: 5,
     image: '',
+    email: '',
+    phone: '',
     isActive: true,
   });
 
@@ -106,6 +108,8 @@ export default function TestimonialsManagementPage() {
       quote: '',
       rating: 5,
       image: '',
+      email: '',
+      phone: '',
       isActive: true,
     });
     setIsDialogOpen(true);
@@ -119,6 +123,8 @@ export default function TestimonialsManagementPage() {
       quote: testimonial.quote || '',
       rating: testimonial.rating || 5,
       image: testimonial.image || '',
+      email: testimonial.email || '',
+      phone: testimonial.phone || '',
       isActive: testimonial.isActive !== undefined ? testimonial.isActive : true,
     });
     setIsDialogOpen(true);
@@ -374,7 +380,21 @@ export default function TestimonialsManagementPage() {
                       <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-foreground/80 italic">"{testimonial.quote}"</p>
+                  <p className="text-foreground/80 italic mb-4">"{testimonial.quote}"</p>
+                  {(testimonial.email || testimonial.phone) && (
+                    <div className="pt-3 border-t border-border space-y-1">
+                      {testimonial.email && (
+                        <p className="text-sm text-foreground/60">
+                          <span className="font-medium">Email:</span> {testimonial.email}
+                        </p>
+                      )}
+                      {testimonial.phone && (
+                        <p className="text-sm text-foreground/60">
+                          <span className="font-medium">Phone:</span> {testimonial.phone}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -427,7 +447,21 @@ export default function TestimonialsManagementPage() {
                       <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-foreground/80 italic">"{testimonial.quote}"</p>
+                  <p className="text-foreground/80 italic mb-4">"{testimonial.quote}"</p>
+                  {(testimonial.email || testimonial.phone) && (
+                    <div className="pt-3 border-t border-border space-y-1">
+                      {testimonial.email && (
+                        <p className="text-sm text-foreground/60">
+                          <span className="font-medium">Email:</span> {testimonial.email}
+                        </p>
+                      )}
+                      {testimonial.phone && (
+                        <p className="text-sm text-foreground/60">
+                          <span className="font-medium">Phone:</span> {testimonial.phone}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -539,6 +573,30 @@ export default function TestimonialsManagementPage() {
                 onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                 placeholder="https://example.com/image.jpg"
               />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email (Optional)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="guest@example.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+91 1234567890"
+                />
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">

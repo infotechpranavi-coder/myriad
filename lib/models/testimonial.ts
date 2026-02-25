@@ -5,6 +5,8 @@ export interface Testimonial {
   quote: string;
   rating?: number; // 1-5 stars
   image?: string; // Optional profile image
+  email?: string; // Optional email
+  phone?: string; // Optional phone number
   isActive: boolean;
   order: number;
   createdAt?: Date;

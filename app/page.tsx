@@ -169,7 +169,7 @@ export default function Home() {
   return (
     <main className="bg-background">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-[75vh] flex items-center justify-center overflow-hidden">
         {loading ? (
           <div className="relative w-full h-full">
             <Image
@@ -207,8 +207,8 @@ export default function Home() {
           >
             <CarouselContent className="h-full ml-0">
               {allSliderImages.map((slide, index) => (
-                <CarouselItem key={`${(slide.banner as any)._id || index}-${slide.slideIndex}`} className="relative h-screen w-full pl-0">
-                  <div className="relative h-screen w-full">
+                <CarouselItem key={`${(slide.banner as any)._id || index}-${slide.slideIndex}`} className="relative h-[75vh] w-full pl-0">
+                  <div className="relative h-[75vh] w-full">
                     <Image
                       src={slide.image || '/hero.jpg'}
                       alt={slide.banner.title || 'The Myriad Hotel'}
@@ -338,19 +338,34 @@ export default function Home() {
               className="w-full"
             >
               <CarouselContent className="-ml-2 md:-ml-4">
-                {rooms.map((room, index) => (
+                {rooms.map((room, index) => {
+                  // Get room images - check gallery first, then images (matching room detail page)
+                  const roomImages = room.gallery || room.images || [];
+                  const roomImage = roomImages.length > 0 ? roomImages[0] : null;
+                  
+                  return (
                   <CarouselItem key={room.id || room._id || index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                     <ScrollAnimationWrapper animation="scaleIn" delay={index * 100}>
                       <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full">
-                        <div className="relative h-64 overflow-hidden">
-                          <Image
-                            src={room.images && room.images.length > 0 ? room.images[0] : (room.gallery && room.gallery.length > 0 ? room.gallery[0] : "/placeholder.svg")}
-                            alt={room.name || room.title || 'Room image'}
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-300"
-                            quality={90}
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
+                        <div className="relative h-64 overflow-hidden bg-muted">
+                          {roomImage ? (
+                            <Image
+                              src={roomImage}
+                              alt={room.name || room.title || 'Room image'}
+                              fill
+                              className="object-cover hover:scale-105 transition-transform duration-300"
+                              quality={90}
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "/placeholder.svg";
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+                              <span>No Image</span>
+                            </div>
+                          )}
                         </div>
                         <div className="p-6">
                           <h3 className="text-2xl font-serif font-bold text-primary mb-2">{room.name || room.title}</h3>
@@ -400,7 +415,8 @@ export default function Home() {
                       </div>
                     </ScrollAnimationWrapper>
                   </CarouselItem>
-                ))}
+                  );
+                })}
               </CarouselContent>
               <CarouselPrevious className="left-0 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
               <CarouselNext className="right-0 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
@@ -472,7 +488,7 @@ export default function Home() {
             <ScrollAnimationWrapper animation="slideInRight" delay={200}>
               <div className="relative h-96 rounded-lg overflow-hidden shadow-lg order-2 md:order-1">
                 <Image
-                  src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&q=90&fit=crop"
+                  src="/WhatsApp Image 2026-02-25 at 1.02.17 PM.jpeg"
                   alt="Luxury Banquet Hall - Elegant event space for weddings, conferences, and celebrations"
                   fill
                   className="object-cover hover:scale-105 transition-smooth duration-500"
@@ -536,9 +552,21 @@ export default function Home() {
                         ))}
                       </div>
                       <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
-                      <div>
-                        <p className="font-semibold text-foreground">{testimonial.name}</p>
-                        <p className="text-foreground/60 text-sm">{testimonial.role}</p>
+                      <div className="flex items-center gap-3">
+                        {testimonial.image && (
+                          <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0">
+                            <Image
+                              src={testimonial.image}
+                              alt={testimonial.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-foreground">{testimonial.name}</p>
+                          <p className="text-foreground/60 text-sm">{testimonial.role || 'Guest'}</p>
+                        </div>
                       </div>
                     </div>
                   </CarouselItem>
@@ -548,27 +576,8 @@ export default function Home() {
               <CarouselNext />
             </Carousel>
           ) : (
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                { name: 'Sarah Mitchell', role: 'Wedding Guest', quote: 'Our wedding at The Myriad was absolutely magical. Every detail was perfect.' },
-                { name: 'James Chen', role: 'Business Traveler', quote: 'The service and attention to detail are unmatched. I always stay here.' },
-                { name: 'Emma Wilson', role: 'Food Critic', quote: 'The restaurants are world-class. The dining experience is exceptional.' },
-              ].map((testimonial, index) => (
-                <ScrollAnimationWrapper key={testimonial.name} animation="fadeUp" delay={index * 100}>
-                  <div className="bg-card p-8 rounded-lg border border-border transition-smooth hover:shadow-lg hover:-translate-y-2">
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={16} className="fill-accent text-accent" />
-                      ))}
-                    </div>
-                    <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
-                    <div>
-                      <p className="font-semibold text-foreground">{testimonial.name}</p>
-                      <p className="text-foreground/60 text-sm">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </ScrollAnimationWrapper>
-              ))}
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No testimonials available yet. Check back soon for guest reviews!</p>
             </div>
           )}
         </div>
