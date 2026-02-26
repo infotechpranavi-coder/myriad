@@ -243,7 +243,7 @@ export default function RoomDetailPage() {
             <div className="bg-background border-b">
                 <div className="max-w-7xl mx-auto px-4 py-4">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex-1 grid grid-cols-2 gap-4">
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button

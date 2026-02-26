@@ -92,9 +92,9 @@ export default function Header() {
   return (
     <header className={`sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-2 border-primary/20 transition-all duration-300 ${hasScrolled ? 'shadow-lg shadow-primary/5' : 'shadow-sm'}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center min-h-18 md:min-h-20 py-2">
+        <div className="flex justify-center md:justify-between items-center min-h-18 md:min-h-20 py-2 relative">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-300 -ml-8 md:-ml-12">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-300 md:-ml-12">
             <div className="p-2">
               <Image
                 src="/Rose Day ka plan tha.png"
@@ -201,7 +201,7 @@ export default function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-foreground/90 hover:text-foreground transition-colors"
+              className="absolute right-0 md:relative md:right-auto md:hidden p-2 text-foreground/90 hover:text-foreground transition-colors"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}

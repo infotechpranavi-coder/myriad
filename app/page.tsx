@@ -498,27 +498,29 @@ export default function Home() {
               </div>
             </ScrollAnimationWrapper>
             <ScrollAnimationWrapper animation="slideInLeft" delay={100}>
-              <div className="order-1 md:order-2">
+              <div className="order-1 md:order-2 text-center md:text-left">
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-6 text-balance">
                   Host Your Event
                 </h2>
                 <p className="text-lg text-foreground/80 mb-6 leading-relaxed">
                   The Myriad Hotel features a stunning banquet hall designed for weddings, conferences, and celebrations. With capacity for up to 500 guests and state-of-the-art facilities.
                 </p>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-3 mb-8 flex flex-col items-center md:items-start">
                   {['Professional event planning', 'Gourmet catering', 'Modern AV facilities', 'Flexible layouts'].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-foreground/80">
-                      <div className="w-2 h-2 bg-primary rounded-full" />
-                      {item}
+                    <li key={item} className="flex items-center gap-2 md:gap-3 text-foreground/80 justify-center md:justify-start">
+                      <div className="w-2 h-2 bg-primary rounded-full shrink-0" />
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={() => setInquiryModalOpen(true)}
-                  className="bg-primary text-primary-foreground px-8 py-3 rounded font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 inline-block"
-                >
-                  Inquiry Details
-                </button>
+                <div className="flex justify-center md:justify-start">
+                  <button
+                    onClick={() => setInquiryModalOpen(true)}
+                    className="bg-primary text-primary-foreground px-8 py-3 rounded font-medium transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95 inline-block"
+                  >
+                    Inquiry Details
+                  </button>
+                </div>
               </div>
             </ScrollAnimationWrapper>
           </div>
