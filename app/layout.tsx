@@ -3,9 +3,10 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-import Header from '@/components/header'
+import ConditionalHeader from '@/components/conditional-header'
 import ConditionalFooter from '@/components/conditional-footer'
 import SmoothScroll from '@/components/SmoothScroll'
+import { AuthProvider } from '@/lib/auth-context'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -41,11 +42,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <SmoothScroll />
-        <Header />
-        {children}
-        <ConditionalFooter />
-        <Analytics />
+        <AuthProvider>
+          <SmoothScroll />
+          <ConditionalHeader />
+          {children}
+          <ConditionalFooter />
+          <Analytics />
+        </AuthProvider>
       </body>
     </html>
   )

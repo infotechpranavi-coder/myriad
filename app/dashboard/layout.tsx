@@ -1,9 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
 import { Home, Hotel, UtensilsCrossed, Calendar, Settings, BarChart3, LogOut, FileText, Image as ImageIcon, Images, MessageSquare, FileCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
+import { Loader2 } from 'lucide-react';
 
 const menuItems = [
   {
@@ -69,6 +73,30 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated, isLoading, logout } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <SidebarProvider>
@@ -103,10 +131,13 @@ export default function DashboardLayout({
               })}
             </SidebarMenu>
           </SidebarContent>
-          <div className="p-4 border-t">
+          <div className="p-4 border-t space-y-2">
+            <SidebarMenuButton onClick={handleLogout} className="w-full text-destructive hover:text-destructive">
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </SidebarMenuButton>
             <SidebarMenuButton asChild>
-              <Link href="/" className="text-destructive">
-                <LogOut className="w-4 h-4" />
+              <Link href="/" className="text-foreground">
                 <span>Back to Website</span>
               </Link>
             </SidebarMenuButton>
