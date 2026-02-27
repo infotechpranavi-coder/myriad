@@ -422,14 +422,6 @@ export default function Home() {
               <CarouselNext className="right-0 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
             </Carousel>
           )}
-          <div className="text-center mt-12">
-            <Link
-              href="/rooms"
-              className="text-primary hover:text-accent font-medium text-lg transition-colors"
-            >
-              View All Rooms →
-            </Link>
-          </div>
         </div>
       </section>
 
