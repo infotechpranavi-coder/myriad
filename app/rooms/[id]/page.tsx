@@ -412,26 +412,42 @@ export default function RoomDetailPage() {
 
                         <div className="border rounded-md p-4 flex justify-between">
                             <div>
-                                <p className="font-semibold">1 x {roomName}</p>
-                                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                    <User size={14} /> 2 Adults
+                                <p className="font-semibold">
+                                    {room.roomDisplayName || `1 x ${roomName}`}
                                 </p>
-                                <p className="text-sm mt-1">Room Only</p>
-                                <div className="text-sm mt-2 space-y-1">
-                                    <p className="text-red-600 font-medium">
-                                        60% Non-Refundable
+                                {room.adultsCount && (
+                                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                        <User size={14} /> {room.adultsCount}
                                     </p>
-                                    <p className="text-green-600">
-                                        40% Refundable in 24 to 48 hours
-                                    </p>
-                                </div>
+                                )}
+                                {room.boardBasis && (
+                                    <p className="text-sm mt-1">{room.boardBasis}</p>
+                                )}
+                                {(room.nonRefundablePercentage || room.refundablePercentage) && (
+                                    <div className="text-sm mt-2 space-y-1">
+                                        {room.nonRefundablePercentage && (
+                                            <p className="text-red-600 font-medium">
+                                                {room.nonRefundablePercentage}% Non-Refundable
+                                            </p>
+                                        )}
+                                        {room.refundablePercentage && room.refundableTimeframe && (
+                                            <p className="text-green-600">
+                                                {room.refundablePercentage}% Refundable in {room.refundableTimeframe}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="text-right text-sm">
-                                <p className="flex items-center gap-1 justify-end text-green-600">
-                                    <CheckCircle2 size={14} /> Partial Refund Available
-                                </p>
-                                <p>Book @ ₹0 available</p>
+                                {room.partialRefundAvailable && (
+                                    <p className="flex items-center gap-1 justify-end text-green-600">
+                                        <CheckCircle2 size={14} /> Partial Refund Available
+                                    </p>
+                                )}
+                                {room.bookingOfferText && (
+                                    <p>{room.bookingOfferText}</p>
+                                )}
                             </div>
                         </div>
                     </div>

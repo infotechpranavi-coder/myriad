@@ -34,6 +34,15 @@ export interface Room {
       images?: string[];
     }>;
   };
+  // Room booking display fields
+  roomDisplayName?: string; // e.g., "1 x Deluxe Room"
+  adultsCount?: string; // e.g., "2 Adults"
+  boardBasis?: string; // e.g., "Room Only"
+  nonRefundablePercentage?: number; // e.g., 60
+  refundablePercentage?: number; // e.g., 40
+  refundableTimeframe?: string; // e.g., "24 to 48 hours"
+  partialRefundAvailable?: boolean; // true/false
+  bookingOfferText?: string; // e.g., "Book @ ₹0 available"
   // Legacy fields for backward compatibility
   name?: string;
   description?: string;

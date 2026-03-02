@@ -59,6 +59,14 @@ export default function RoomsManagementPage() {
     serviceFees: '',
     addons: '',
     goibiboOffers: '',
+    roomDisplayName: '',
+    adultsCount: '',
+    boardBasis: '',
+    nonRefundablePercentage: '',
+    refundablePercentage: '',
+    refundableTimeframe: '',
+    partialRefundAvailable: false,
+    bookingOfferText: '',
   });
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -210,6 +218,14 @@ export default function RoomsManagementPage() {
       serviceFees: room.priceSummary?.serviceFees?.toString() || '',
       addons: '', // No longer used
       goibiboOffers: '', // No longer used
+      roomDisplayName: room.roomDisplayName || '',
+      adultsCount: room.adultsCount || '',
+      boardBasis: room.boardBasis || '',
+      nonRefundablePercentage: room.nonRefundablePercentage?.toString() || '',
+      refundablePercentage: room.refundablePercentage?.toString() || '',
+      refundableTimeframe: room.refundableTimeframe || '',
+      partialRefundAvailable: room.partialRefundAvailable || false,
+      bookingOfferText: room.bookingOfferText || '',
     });
     setImageUrls(room.gallery || room.images || []);
     // Convert addons to array format
@@ -249,6 +265,14 @@ export default function RoomsManagementPage() {
       serviceFees: '',
       addons: '',
       goibiboOffers: '',
+      roomDisplayName: '',
+      adultsCount: '',
+      boardBasis: '',
+      nonRefundablePercentage: '',
+      refundablePercentage: '',
+      refundableTimeframe: '',
+      partialRefundAvailable: false,
+      bookingOfferText: '',
     });
     setImageUrls([]);
     setNewImageUrl('');
@@ -512,6 +536,15 @@ export default function RoomsManagementPage() {
         },
         addons: addonsData,
         goibiboOffers: goibiboOffersData,
+        // Room booking display fields
+        roomDisplayName: formData.roomDisplayName || undefined,
+        adultsCount: formData.adultsCount || undefined,
+        boardBasis: formData.boardBasis || undefined,
+        nonRefundablePercentage: formData.nonRefundablePercentage ? parseFloat(formData.nonRefundablePercentage) : undefined,
+        refundablePercentage: formData.refundablePercentage ? parseFloat(formData.refundablePercentage) : undefined,
+        refundableTimeframe: formData.refundableTimeframe || undefined,
+        partialRefundAvailable: formData.partialRefundAvailable,
+        bookingOfferText: formData.bookingOfferText || undefined,
         // Legacy fields for backward compatibility
         name: formData.title,
         description: formData.about,
@@ -705,6 +738,96 @@ export default function RoomsManagementPage() {
                     onChange={(e) => setFormData({ ...formData, room: e.target.value })}
                     placeholder="Room Type/Details"
                   />
+                </div>
+              </div>
+
+              {/* Room Display Section */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold mb-3">Room Booking Display</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Room Display Name</label>
+                    <Input
+                      value={formData.roomDisplayName}
+                      onChange={(e) => setFormData({ ...formData, roomDisplayName: e.target.value })}
+                      placeholder="1 x Deluxe Room"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Displayed as room selection (e.g., "1 x Deluxe Room")</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Adults Count</label>
+                    <Input
+                      value={formData.adultsCount}
+                      onChange={(e) => setFormData({ ...formData, adultsCount: e.target.value })}
+                      placeholder="2 Adults"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Board Basis</label>
+                    <Input
+                      value={formData.boardBasis}
+                      onChange={(e) => setFormData({ ...formData, boardBasis: e.target.value })}
+                      placeholder="Room Only"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Non-Refundable %</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.nonRefundablePercentage}
+                        onChange={(e) => setFormData({ ...formData, nonRefundablePercentage: e.target.value })}
+                        placeholder="60"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Refundable %</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.refundablePercentage}
+                        onChange={(e) => setFormData({ ...formData, refundablePercentage: e.target.value })}
+                        placeholder="40"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Refundable Timeframe</label>
+                    <Input
+                      value={formData.refundableTimeframe}
+                      onChange={(e) => setFormData({ ...formData, refundableTimeframe: e.target.value })}
+                      placeholder="24 to 48 hours"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="partialRefundAvailable"
+                      checked={formData.partialRefundAvailable}
+                      onChange={(e) => setFormData({ ...formData, partialRefundAvailable: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="partialRefundAvailable" className="text-sm font-medium">
+                      Partial Refund Available
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Booking Offer Text</label>
+                    <Input
+                      value={formData.bookingOfferText}
+                      onChange={(e) => setFormData({ ...formData, bookingOfferText: e.target.value })}
+                      placeholder="Book @ ₹0 available"
+                    />
+                  </div>
                 </div>
               </div>
 
