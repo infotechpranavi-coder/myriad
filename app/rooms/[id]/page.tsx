@@ -39,13 +39,6 @@ import {
     CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -234,107 +227,6 @@ export default function RoomDetailPage() {
                         {[...Array(3)].map((_, i) => (
                             <Star key={i} size={14} fill="currentColor" />
                         ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Calendar Date Picker Section */}
-            <div className="bg-background border-b">
-                <div className="max-w-7xl mx-auto px-4 py-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <div className="flex-1 grid grid-cols-2 gap-4">
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className={cn(
-                                            'w-full justify-start text-left font-normal',
-                                            !dateRange.from && 'text-muted-foreground'
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {dateRange.from ? (
-                                            format(dateRange.from, 'EEE, d MMM yyyy')
-                                        ) : (
-                                            <span>Check-in</span>
-                                        )}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        mode="single"
-                                        selected={dateRange.from}
-                                        onSelect={(date) => {
-                                            if (date) {
-                                                setDateRange((prev) => {
-                                                    const newFrom = date;
-                                                    const newTo = prev.to && newFrom.getTime() >= prev.to.getTime() 
-                                                        ? undefined 
-                                                        : prev.to;
-                                                    return {
-                                                        from: newFrom,
-                                                        to: newTo,
-                                                    };
-                                                });
-                                            }
-                                        }}
-                                        disabled={(date) => {
-                                            const today = new Date();
-                                            today.setHours(0, 0, 0, 0);
-                                            return date < today;
-                                        }}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className={cn(
-                                            'w-full justify-start text-left font-normal',
-                                            !dateRange.to && 'text-muted-foreground'
-                                        )}
-                                        disabled={!dateRange.from}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {dateRange.to ? (
-                                            format(dateRange.to, 'EEE, d MMM yyyy')
-                                        ) : (
-                                            <span>Check-out</span>
-                                        )}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        mode="single"
-                                        selected={dateRange.to}
-                                        onSelect={(date) => {
-                                            if (date && dateRange.from) {
-                                                setDateRange((prev) => ({
-                                                    ...prev,
-                                                    to: date.getTime() > prev.from!.getTime() ? date : undefined,
-                                                }));
-                                            }
-                                        }}
-                                        disabled={(date) => {
-                                            if (!dateRange.from) return true;
-                                            const checkInDate = new Date(dateRange.from);
-                                            checkInDate.setHours(0, 0, 0, 0);
-                                            const selectedDate = new Date(date);
-                                            selectedDate.setHours(0, 0, 0, 0);
-                                            return selectedDate.getTime() <= checkInDate.getTime();
-                                        }}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-
-                        <div className="text-sm text-muted-foreground">
-                            {nights} {nights === 1 ? 'Night' : 'Nights'}
-                        </div>
                     </div>
                 </div>
             </div>
@@ -593,144 +485,6 @@ export default function RoomDetailPage() {
                         </div>
                     </div>
 
-                    {/* GUEST DETAILS */}
-                    <div className="bg-background border rounded-lg p-6">
-                        <h3 className="font-bold mb-4">Guest Details</h3>
-
-                        <form
-                            onSubmit={async (e) => {
-                                e.preventDefault();
-                                try {
-                                    setSubmitting(true);
-                                    const bookingData = {
-                                        roomId: room?.id || params.id,
-                                        roomName: roomName,
-                                        title: guestForm.title,
-                                        firstName: guestForm.firstName,
-                                        lastName: guestForm.lastName,
-                                        email: guestForm.email,
-                                        mobileNumber: guestForm.mobileNumber,
-                                        checkIn: dateRange.from,
-                                        checkOut: dateRange.to,
-                                        guests: '2',
-                                        nights: nights,
-                                        hours: hours,
-                                        selectedAddons: Array.from(selectedAddons).map(index => ({
-                                            name: addons[index]?.name || '',
-                                            price: addons[index]?.price || 0
-                                        })),
-                                        totalAmount: finalTotal,
-                                    };
-
-                                    const response = await fetch('/api/bookings', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        },
-                                        body: JSON.stringify(bookingData),
-                                    });
-
-                                    if (response.ok) {
-                                        // Store booking details before resetting form
-                                        setBookingDetails({
-                                            roomName: roomName,
-                                            checkIn: dateRange.from,
-                                            checkOut: dateRange.to,
-                                            nights: nights,
-                                            hours: hours,
-                                            guests: '2',
-                                            totalAmount: finalTotal,
-                                        });
-                                        // Reset form
-                                        setGuestForm({
-                                            title: 'Mr',
-                                            firstName: '',
-                                            lastName: '',
-                                            email: '',
-                                            mobileNumber: '',
-                                        });
-                                        // Show confirmation modal
-                                        setShowConfirmation(true);
-                                    } else {
-                                        const error = await response.json();
-                                        toast({
-                                            title: 'Error',
-                                            description: error.error || 'Failed to submit booking',
-                                            variant: 'destructive',
-                                        });
-                                    }
-                                } catch (error) {
-                                    console.error('Error submitting booking:', error);
-                                    toast({
-                                        title: 'Error',
-                                        description: 'Failed to submit booking',
-                                        variant: 'destructive',
-                                    });
-                                } finally {
-                                    setSubmitting(false);
-                                }
-                            }}
-                        >
-                            <div className="grid grid-cols-3 gap-4 mb-4">
-                                <Select
-                                    value={guestForm.title}
-                                    onValueChange={(value) =>
-                                        setGuestForm({ ...guestForm, title: value })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Mr">Mr</SelectItem>
-                                        <SelectItem value="Ms">Ms</SelectItem>
-                                        <SelectItem value="Mrs">Mrs</SelectItem>
-                                        <SelectItem value="Dr">Dr</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Input
-                                    placeholder="First Name"
-                                    value={guestForm.firstName}
-                                    onChange={(e) =>
-                                        setGuestForm({ ...guestForm, firstName: e.target.value })
-                                    }
-                                    required
-                                />
-                                <Input
-                                    placeholder="Last Name"
-                                    value={guestForm.lastName}
-                                    onChange={(e) =>
-                                        setGuestForm({ ...guestForm, lastName: e.target.value })
-                                    }
-                                    required
-                                />
-                            </div>
-
-                            <Input
-                                type="email"
-                                placeholder="Email Address (optional)"
-                                className="mb-4"
-                                value={guestForm.email}
-                                onChange={(e) =>
-                                    setGuestForm({ ...guestForm, email: e.target.value })
-                                }
-                            />
-                            <Input
-                                type="tel"
-                                placeholder="Mobile Number"
-                                className="mb-4"
-                                value={guestForm.mobileNumber}
-                                onChange={(e) =>
-                                    setGuestForm({ ...guestForm, mobileNumber: e.target.value })
-                                }
-                                required
-                            />
-                            <Button type="submit" className="w-full" disabled={submitting}>
-                                {submitting ? 'Submitting...' : 'Submit Booking'}
-                            </Button>
-                        </form>
-                    </div>
                 </div>
 
                 {/* RIGHT COLUMN – STICKY PRICE SUMMARY */}
@@ -757,6 +511,90 @@ export default function RoomDetailPage() {
                             });
                         }}
                         goibiboOffers={goibiboOffers}
+                        guestForm={{
+                            firstName: guestForm.firstName,
+                            lastName: guestForm.lastName,
+                            email: guestForm.email,
+                            mobileNumber: guestForm.mobileNumber,
+                        }}
+                        onGuestFormChange={(field, value) => {
+                            setGuestForm(prev => ({ ...prev, [field]: value }));
+                        }}
+                        dateRange={dateRange}
+                        onDateRangeChange={setDateRange}
+                        onSubmit={async (e) => {
+                            e.preventDefault();
+                            try {
+                                setSubmitting(true);
+                                const bookingData = {
+                                    roomId: room?.id || params.id,
+                                    roomName: roomName,
+                                    title: guestForm.title,
+                                    firstName: guestForm.firstName,
+                                    lastName: guestForm.lastName,
+                                    email: guestForm.email,
+                                    mobileNumber: guestForm.mobileNumber,
+                                    checkIn: dateRange.from,
+                                    checkOut: dateRange.to,
+                                    guests: '2',
+                                    nights: nights,
+                                    hours: hours,
+                                    selectedAddons: Array.from(selectedAddons).map(index => ({
+                                        name: addons[index]?.name || '',
+                                        price: addons[index]?.price || 0
+                                    })),
+                                    totalAmount: finalTotal,
+                                };
+
+                                const response = await fetch('/api/bookings', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify(bookingData),
+                                });
+
+                                if (response.ok) {
+                                    // Store booking details before resetting form
+                                    setBookingDetails({
+                                        roomName: roomName,
+                                        checkIn: dateRange.from,
+                                        checkOut: dateRange.to,
+                                        nights: nights,
+                                        hours: hours,
+                                        guests: '2',
+                                        totalAmount: finalTotal,
+                                    });
+                                    // Reset form
+                                    setGuestForm({
+                                        title: 'Mr',
+                                        firstName: '',
+                                        lastName: '',
+                                        email: '',
+                                        mobileNumber: '',
+                                    });
+                                    // Show confirmation modal
+                                    setShowConfirmation(true);
+                                } else {
+                                    const error = await response.json();
+                                    toast({
+                                        title: 'Error',
+                                        description: error.error || 'Failed to submit booking',
+                                        variant: 'destructive',
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Error submitting booking:', error);
+                                toast({
+                                    title: 'Error',
+                                    description: 'Failed to submit booking',
+                                    variant: 'destructive',
+                                });
+                            } finally {
+                                setSubmitting(false);
+                            }
+                        }}
+                        submitting={submitting}
                     />
                 </div>
             </div>
