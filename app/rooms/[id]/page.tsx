@@ -206,10 +206,9 @@ export default function RoomDetailPage() {
         ? Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60))
         : 24;
 
-    // Calculate base price based on 24-hour rate and number of days
-    // If less than 24 hours, charge for 1 day (24-hour rate)
-    // If more than 24 hours, calculate proportionally
-    const basePrice = days < 1 ? pricePer24Hours : pricePer24Hours * days;
+    // Calculate base price based on 24-hour rate and number of nights
+    // 1 night = 1x price, 2 nights = 2x price, 3 nights = 3x price, etc.
+    const basePrice = pricePer24Hours * nights;
 
     // Calculate total addon price from selected addons
     const selectedAddonsTotal = Array.from(selectedAddons).reduce((sum, index) => {
@@ -724,9 +723,8 @@ export default function RoomDetailPage() {
                         roomName={roomName}
                         price={basePrice}
                         pricePer24Hours={pricePer24Hours}
-                        days={days}
-                        hours={hours}
                         nights={nights}
+                        hours={hours}
                         taxes={taxes}
                         serviceFees={serviceFees}
                         addons={addons}

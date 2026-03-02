@@ -7,7 +7,6 @@ interface PricingSidebarProps {
     roomName: string
     price: number
     pricePer24Hours?: number
-    days?: number
     hours?: number
     nights?: number
     taxes?: number
@@ -26,7 +25,7 @@ interface PricingSidebarProps {
     }>
 }
 
-export function PricingSidebar({ roomName, price, pricePer24Hours, days, hours, nights, taxes = 0, serviceFees = 0, addons = [], selectedAddons = new Set(), onAddonToggle, goibiboOffers = [] }: PricingSidebarProps) {
+export function PricingSidebar({ roomName, price, pricePer24Hours, hours, nights, taxes = 0, serviceFees = 0, addons = [], selectedAddons = new Set(), onAddonToggle, goibiboOffers = [] }: PricingSidebarProps) {
     const totalTaxesAndFees = taxes + serviceFees;
     
     // Calculate selected addons total
@@ -59,10 +58,9 @@ export function PricingSidebar({ roomName, price, pricePer24Hours, days, hours, 
                                     ₹{price.toLocaleString()} + ₹{totalTaxesAndFees.toLocaleString()}
                                 </span>
                             </div>
-                            {pricePer24Hours && days !== undefined ? (
+                            {pricePer24Hours && nights !== undefined && nights > 0 ? (
                                 <p className="text-xs text-foreground/50">
-                                    (₹{pricePer24Hours.toLocaleString()}/24hrs × {days.toFixed(1)} {days === 1 ? 'day' : 'days'})
-                                    {nights && nights > 0 && ` • ${nights} ${nights === 1 ? 'night' : 'nights'}`}
+                                    (₹{pricePer24Hours.toLocaleString()}/24hrs × {nights} {nights === 1 ? 'night' : 'nights'})
                                 </p>
                             ) : (
                                 <p className="text-xs text-foreground/50">(1 Room x 1 Night)</p>
