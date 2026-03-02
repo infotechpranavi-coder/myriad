@@ -12,12 +12,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Room } from '@/lib/models/room';
 
-export default function Header() {
+interface HeaderProps {
+  initialRooms?: Room[];
+}
+
+export default function Header({ initialRooms = [] }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isRestaurantMenuOpen, setIsRestaurantMenuOpen] = useState(false);
   const [isRoomsMenuOpen, setIsRoomsMenuOpen] = useState(false);
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [rooms, setRooms] = useState<Room[]>(initialRooms);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,7 +32,13 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Only fetch rooms if not provided as props (fallback for client-side navigation)
   useEffect(() => {
+    if (initialRooms.length > 0) {
+      setRooms(initialRooms);
+      return;
+    }
+
     async function fetchRooms() {
       try {
         const response = await fetch('/api/rooms');
@@ -75,7 +85,7 @@ export default function Header() {
       }
     }
     fetchRooms();
-  }, []);
+  }, [initialRooms]);
 
   const navItems = [
     { href: '/', label: 'Home' },

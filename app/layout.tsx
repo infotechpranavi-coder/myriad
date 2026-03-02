@@ -7,6 +7,7 @@ import ConditionalHeader from '@/components/conditional-header'
 import ConditionalFooter from '@/components/conditional-footer'
 import SmoothScroll from '@/components/SmoothScroll'
 import { AuthProvider } from '@/lib/auth-context'
+import HeaderWrapper from '@/components/header-wrapper'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -35,7 +36,9 @@ export default function RootLayout({
       <body className={`font-sans antialiased`}>
         <AuthProvider>
           <SmoothScroll />
-          <ConditionalHeader />
+          <ConditionalHeader>
+            <HeaderWrapper />
+          </ConditionalHeader>
           {children}
           <ConditionalFooter />
           <Analytics />

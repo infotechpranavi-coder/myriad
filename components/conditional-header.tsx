@@ -1,9 +1,13 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Header from './header';
+import { ReactNode } from 'react';
 
-export default function ConditionalHeader() {
+interface ConditionalHeaderProps {
+  children: ReactNode;
+}
+
+export default function ConditionalHeader({ children }: ConditionalHeaderProps) {
   const pathname = usePathname();
   
   // Don't show header on dashboard and login pages
@@ -11,5 +15,5 @@ export default function ConditionalHeader() {
     return null;
   }
   
-  return <Header />;
+  return <>{children}</>;
 }

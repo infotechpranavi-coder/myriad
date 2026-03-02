@@ -93,23 +93,48 @@ export async function PUT(
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    const updateData = {
-      ...body,
+    // Separate fields to set and fields to unset (null values should be removed)
+    const fieldsToUnset: string[] = [];
+    const updateData: any = {
       updatedAt: new Date(),
     };
+    
+    // Process each field - if it's null, add to unset, otherwise add to set
+    for (const [key, value] of Object.entries(body)) {
+      // Skip _id as it cannot be updated
+      if (key === '_id') continue;
+      
+      if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+        // Add to unset list to remove the field
+        fieldsToUnset.push(key);
+      } else {
+        // Add to set list
+        updateData[key] = value;
+      }
+    }
+    
+    // Build the update operation
+    const updateOperation: any = { $set: updateData };
+    if (fieldsToUnset.length > 0) {
+      const unsetObj: any = {};
+      fieldsToUnset.forEach(field => {
+        unsetObj[field] = '';
+      });
+      updateOperation.$unset = unsetObj;
+    }
     
     // Try to update by MongoDB _id first, then by custom id field
     let result;
     if (ObjectId.isValid(id)) {
       result = await db.collection<Room>(COLLECTION_NAME).findOneAndUpdate(
         { _id: new ObjectId(id) },
-        { $set: updateData },
+        updateOperation,
         { returnDocument: 'after' }
       );
     } else {
       result = await db.collection<Room>(COLLECTION_NAME).findOneAndUpdate(
         { id },
-        { $set: updateData },
+        updateOperation,
         { returnDocument: 'after' }
       );
     }

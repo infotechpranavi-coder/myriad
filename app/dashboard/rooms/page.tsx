@@ -517,43 +517,51 @@ export default function RoomsManagementPage() {
       const serviceFees = formData.serviceFees ? parseFloat(formData.serviceFees) : 0;
       const totalAmount = basePrice + taxes + serviceFees;
 
-    const roomData = {
-      id: editingRoom?.id || (rooms.length + 1).toString(),
-        title: formData.title,
-        checkIn: formData.checkIn || undefined,
-        checkOut: formData.checkOut || undefined,
-        guests: formData.guests || undefined,
-        room: formData.room || undefined,
-        about: formData.about || undefined,
-        amenities: formData.amenities.split(',').map((a) => a.trim()).filter(Boolean),
-        location: formData.location || undefined,
-        gallery: imageUrls.filter(Boolean),
-        priceSummary: {
-          basePrice,
-          taxes: taxes || undefined,
-          serviceFees: serviceFees || undefined,
-          totalAmount,
-        },
-        addons: addonsData,
-        goibiboOffers: goibiboOffersData,
-        // Room booking display fields
-        roomDisplayName: formData.roomDisplayName || undefined,
-        adultsCount: formData.adultsCount || undefined,
-        boardBasis: formData.boardBasis || undefined,
-        nonRefundablePercentage: formData.nonRefundablePercentage ? parseFloat(formData.nonRefundablePercentage) : undefined,
-        refundablePercentage: formData.refundablePercentage ? parseFloat(formData.refundablePercentage) : undefined,
-        refundableTimeframe: formData.refundableTimeframe || undefined,
-        partialRefundAvailable: formData.partialRefundAvailable,
-        bookingOfferText: formData.bookingOfferText || undefined,
-        // Legacy fields for backward compatibility
-        name: formData.title,
-        description: formData.about,
-        price: basePrice,
-        capacity: formData.guests,
+    // Prepare room data, preserving existing id when editing
+    const roomData: any = {
+      id: editingRoom?.id || editingRoom?._id?.toString() || (rooms.length + 1).toString(),
+      title: formData.title,
+      checkIn: formData.checkIn || undefined,
+      checkOut: formData.checkOut || undefined,
+      guests: formData.guests || undefined,
+      room: formData.room || undefined,
+      about: formData.about || undefined,
+      amenities: formData.amenities.split(',').map((a) => a.trim()).filter(Boolean),
+      location: formData.location || undefined,
+      gallery: imageUrls.filter(Boolean),
+      priceSummary: {
+        basePrice,
+        taxes: taxes || undefined,
+        serviceFees: serviceFees || undefined,
+        totalAmount,
+      },
+      addons: addonsData,
+      goibiboOffers: goibiboOffersData,
+      // Room booking display fields - use null for empty strings to allow clearing fields
+      roomDisplayName: formData.roomDisplayName?.trim() || null,
+      adultsCount: formData.adultsCount?.trim() || null,
+      boardBasis: formData.boardBasis?.trim() || null,
+      nonRefundablePercentage: formData.nonRefundablePercentage?.trim() ? parseFloat(formData.nonRefundablePercentage) : null,
+      refundablePercentage: formData.refundablePercentage?.trim() ? parseFloat(formData.refundablePercentage) : null,
+      refundableTimeframe: formData.refundableTimeframe?.trim() || null,
+      partialRefundAvailable: formData.partialRefundAvailable,
+      bookingOfferText: formData.bookingOfferText?.trim() || null,
+      // Legacy fields for backward compatibility
+      name: formData.title,
+      description: formData.about,
+      price: basePrice,
+      capacity: formData.guests,
     };
 
-      const url = editingRoom ? `/api/rooms/${editingRoom.id}` : '/api/rooms';
-      const method = editingRoom ? 'PUT' : 'POST';
+    // Remove _id from update data (MongoDB doesn't allow updating _id)
+    if (editingRoom && roomData._id) {
+      delete roomData._id;
+    }
+
+    // Use _id if available (MongoDB ObjectId), otherwise use id
+    const roomIdentifier = editingRoom?._id?.toString() || editingRoom?.id || '';
+    const url = editingRoom ? `/api/rooms/${roomIdentifier}` : '/api/rooms';
+    const method = editingRoom ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
@@ -564,14 +572,17 @@ export default function RoomsManagementPage() {
       });
 
       if (response.ok) {
+        const result = await response.json();
         toast({
           title: 'Success',
           description: editingRoom ? 'Room updated successfully' : 'Room created successfully',
         });
         setIsDialogOpen(false);
+        setEditingRoom(null);
         fetchRooms();
     } else {
         const error = await response.json();
+        console.error('Error saving room:', error);
         toast({
           title: 'Error',
           description: error.error || 'Failed to save room',
@@ -645,11 +656,12 @@ export default function RoomsManagementPage() {
             setIsDialogOpen(open);
             if (!open) {
               setGalleryUploadError(null);
-            }
-            if (!open) {
-              // Reset gallery when dialog closes
+              // Reset form and state when dialog closes
+              setEditingRoom(null);
               setImageUrls([]);
               setNewImageUrl('');
+              setAddons([]);
+              setGoibiboOffers([]);
             }
           }}
           modal={true}
