@@ -167,7 +167,7 @@ export default function Footer() {
                 <span className="text-sm font-medium">The Myriad Hotel</span>
               </a>
               <a 
-                href="https://www.instagram.com/urbandhabba/" 
+                href="https://www.instagram.com/urbandhaba.official?igsh=MWZ3dnhkeGJsem5uYg%3D%3D&utm_source=qr" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-2 rounded-lg bg-background/10 hover:bg-linear-to-r hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 text-background/70 hover:text-background transition-all duration-300 hover:scale-105 group"

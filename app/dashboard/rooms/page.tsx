@@ -67,6 +67,7 @@ export default function RoomsManagementPage() {
     refundableTimeframe: '',
     partialRefundAvailable: false,
     bookingOfferText: '',
+    order: '',
   });
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -226,6 +227,7 @@ export default function RoomsManagementPage() {
       refundableTimeframe: room.refundableTimeframe || '',
       partialRefundAvailable: room.partialRefundAvailable || false,
       bookingOfferText: room.bookingOfferText || '',
+      order: room.order?.toString() || '',
     });
     setImageUrls(room.gallery || room.images || []);
     // Convert addons to array format
@@ -273,6 +275,7 @@ export default function RoomsManagementPage() {
       refundableTimeframe: '',
       partialRefundAvailable: false,
       bookingOfferText: '',
+      order: '',
     });
     setImageUrls([]);
     setNewImageUrl('');
@@ -546,6 +549,7 @@ export default function RoomsManagementPage() {
       refundableTimeframe: formData.refundableTimeframe?.trim() || null,
       partialRefundAvailable: formData.partialRefundAvailable,
       bookingOfferText: formData.bookingOfferText?.trim() || null,
+      ...(formData.order?.trim() ? { order: parseInt(formData.order) } : {}),
       // Legacy fields for backward compatibility
       name: formData.title,
       description: formData.about,
@@ -701,14 +705,27 @@ export default function RoomsManagementPage() {
                 e.stopPropagation();
               }}
             >
-              {/* Title */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Title</label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Deluxe Room"
-                />
+              {/* Title & Display Order */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Title</label>
+                  <Input
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Deluxe Room"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Display Order</label>
+                  <Input
+                    type="number"
+                    value={formData.order}
+                    onChange={(e) => setFormData({ ...formData, order: e.target.value })}
+                    placeholder="1, 2, 3..."
+                    min="1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Lower numbers appear first</p>
+                </div>
               </div>
 
               {/* Check-in & Check-out */}

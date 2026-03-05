@@ -159,9 +159,9 @@ export default function RestaurantDetailPage() {
     const restaurantName = restaurant.name.toLowerCase();
     const slug = restaurant.slug?.toLowerCase();
     
-    // Urban Dhaba: https://www.instagram.com/urbandhabba/
+    // Urban Dhaba: https://www.instagram.com/urbandhaba.official?igsh=MWZ3dnhkeGJsem5uYg%3D%3D&utm_source=qr
     if (restaurantName.includes('urban dhaba') || slug === 'urban-dhaba') {
-      return { url: 'https://www.instagram.com/urbandhabba/', handle: '@urbandhabba' };
+      return { url: 'https://www.instagram.com/urbandhaba.official?igsh=MWZ3dnhkeGJsem5uYg%3D%3D&utm_source=qr', handle: '@urbandhaba.official' };
     }
     // Coastal Sea Food: https://www.instagram.com/coastalseafood_restaurant/
     if (restaurantName.includes('coastal') || slug === 'coastal-seafood') {

@@ -43,6 +43,8 @@ export interface Room {
   refundableTimeframe?: string; // e.g., "24 to 48 hours"
   partialRefundAvailable?: boolean; // true/false
   bookingOfferText?: string; // e.g., "Book @ ₹0 available"
+  // Display order for sorting
+  order?: number;
   // Legacy fields for backward compatibility
   name?: string;
   description?: string;

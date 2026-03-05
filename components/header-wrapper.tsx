@@ -28,38 +28,21 @@ async function getRooms(): Promise<Room[]> {
 export default async function HeaderWrapper() {
   const rooms = await getRooms();
   
-  // Define the desired order sequence
-  const roomOrder = [
-    'Deluxe Room',
-    'Deluxe Twin',
-    'Super Deluxe',
-    'Executive Room',
-    'Executive Suite',
-    'Presidential Suite'
-  ];
-  
-  // Sort rooms based on the defined order
+  // Sort rooms by order field (lower numbers first)
+  // Rooms without order will appear last
   const sortedRooms = [...rooms].sort((a, b) => {
-    const roomNameA = (a.name || a.title || '').trim();
-    const roomNameB = (b.name || b.title || '').trim();
+    const orderA = a.order ?? 9999; // Default to high number if no order
+    const orderB = b.order ?? 9999;
     
-    const indexA = roomOrder.findIndex(order => 
-      roomNameA.toLowerCase() === order.toLowerCase()
-    );
-    const indexB = roomOrder.findIndex(order => 
-      roomNameB.toLowerCase() === order.toLowerCase()
-    );
-    
-    // If both are in the order list, sort by their position
-    if (indexA !== -1 && indexB !== -1) {
-      return indexA - indexB;
+    // Primary sort by order
+    if (orderA !== orderB) {
+      return orderA - orderB;
     }
-    // If only A is in the order list, A comes first
-    if (indexA !== -1) return -1;
-    // If only B is in the order list, B comes first
-    if (indexB !== -1) return 1;
-    // If neither is in the order list, maintain original order
-    return 0;
+    
+    // Secondary sort by name if order is the same
+    const nameA = (a.name || a.title || '').trim();
+    const nameB = (b.name || b.title || '').trim();
+    return nameA.localeCompare(nameB);
   });
   
   return <Header initialRooms={sortedRooms} />;
