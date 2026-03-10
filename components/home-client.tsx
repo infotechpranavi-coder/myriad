@@ -100,12 +100,15 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
     return [];
   });
 
-  // Filter and sort blogs (only published)
+  // Filter and sort blogs (show all except drafts)
   const publishedBlogs = blogs
-    .filter((b: BlogPost) => b.status === 'published')
+    .filter((b: BlogPost) => {
+      // Show all blogs except those explicitly set to 'draft'
+      return b.status !== 'draft';
+    })
     .sort((a: BlogPost, b: BlogPost) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(a.date).getTime();
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(b.date).getTime();
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : (a.date ? new Date(a.date).getTime() : 0);
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : (b.date ? new Date(b.date).getTime() : 0);
       return dateB - dateA; // newest first
     });
 
@@ -392,12 +395,12 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
                     href={`/blog/${blog._id}`}
                     className="group block bg-card rounded-lg border border-border overflow-hidden shadow-md hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full"
                   >
-                    <div className="relative h-52 w-full overflow-hidden bg-muted">
+                    <div className="relative h-60 w-full bg-muted flex items-center justify-center">
                       <Image
                         src={blog.image || blog.images?.[0] || '/hero.jpg'}
                         alt={blog.title}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-110"
+                        className="object-contain"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>

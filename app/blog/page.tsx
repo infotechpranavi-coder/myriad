@@ -68,12 +68,12 @@ export default function BlogPage() {
                   <Link href={`/blog/${blog._id}`} className="group">
                     <article className="bg-card rounded-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col">
                       {/* Blog Image */}
-                      <div className="relative w-full h-64 overflow-hidden bg-muted/20">
+                      <div className="relative w-full h-64 bg-muted/20 flex items-center justify-center">
                         <Image
                           src={blog.image || blog.images?.[0] || '/hero.jpg'}
                           alt={blog.title}
                           fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-110"
+                          className="object-contain"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       </div>
