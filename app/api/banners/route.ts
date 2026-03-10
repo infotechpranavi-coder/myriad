@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import clientPromise from '@/lib/mongodb';
 import { Banner } from '@/lib/models/banner';
 
@@ -53,6 +54,10 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db.collection<Banner>(COLLECTION_NAME).insertOne(newBanner);
+
+    // Revalidate the home page to show new banner immediately
+    revalidatePath('/');
+    revalidatePath('/dashboard');
 
     return NextResponse.json(
       { ...newBanner, _id: result.insertedId },

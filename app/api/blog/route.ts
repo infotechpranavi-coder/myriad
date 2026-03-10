@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import clientPromise from '@/lib/mongodb';
 import { BlogPost } from '@/lib/models/blog';
 
@@ -50,6 +51,11 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db.collection<BlogPost>(COLLECTION_NAME).insertOne(newPost);
+
+    // Revalidate blog pages to show new blog immediately
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath('/dashboard');
 
     return NextResponse.json(
       { ...newPost, _id: result.insertedId },

@@ -18,7 +18,14 @@ export default function BlogPage() {
   async function fetchBlogs() {
     try {
       setLoading(true);
-      const response = await fetch('/api/blog');
+      // Add cache-busting headers to ensure fresh data on Vercel
+      const response = await fetch('/api/blog', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         // Filter only published blogs

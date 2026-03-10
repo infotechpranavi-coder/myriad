@@ -79,12 +79,20 @@ async function getBlogs(): Promise<BlogPost[]> {
       .sort({ createdAt: -1 })
       .toArray();
     // Serialize ObjectIds to strings for client component
-    return JSON.parse(JSON.stringify(blogs));
+    const serializedBlogs = JSON.parse(JSON.stringify(blogs));
+    console.log(`[getBlogs] Fetched ${serializedBlogs.length} blogs from database`);
+    return serializedBlogs;
   } catch (error) {
     console.error('Error fetching blogs:', error);
     return [];
   }
 }
+
+// Force dynamic rendering on Vercel - disable all caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 export default async function Home() {
   // Fetch all data in parallel for better performance
@@ -94,6 +102,13 @@ export default async function Home() {
     getRestaurants(),
     getBlogs(),
   ]);
+
+  console.log('[Home Page] Fetched data:', {
+    banners: banners.length,
+    rooms: rooms.length,
+    restaurants: restaurants.length,
+    blogs: blogs.length
+  });
 
   return (
     <HomeClient

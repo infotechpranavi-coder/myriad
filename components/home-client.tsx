@@ -100,17 +100,29 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
     return [];
   });
 
-  // Filter and sort blogs (show all except drafts)
-  const publishedBlogs = blogs
+  // Sort blogs (show all blogs from database)
+  // Log for debugging
+  console.log('[HomeClient] Total blogs received:', blogs?.length || 0);
+  if (blogs && blogs.length > 0) {
+    console.log('[HomeClient] Sample blog:', {
+      title: blogs[0]?.title,
+      status: blogs[0]?.status,
+      _id: blogs[0]?._id
+    });
+  }
+  
+  const publishedBlogs = (blogs || [])
     .filter((b: BlogPost) => {
-      // Show all blogs except those explicitly set to 'draft'
-      return b.status !== 'draft';
+      // Show all blogs - no filtering for now to ensure they appear
+      return true;
     })
     .sort((a: BlogPost, b: BlogPost) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : (a.date ? new Date(a.date).getTime() : 0);
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : (b.date ? new Date(b.date).getTime() : 0);
       return dateB - dateA; // newest first
     });
+  
+  console.log('[HomeClient] Blogs to display:', publishedBlogs.length);
 
   return (
     <main className="bg-background">

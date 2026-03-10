@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { BlogPost } from '@/lib/models/blog';
@@ -183,6 +184,13 @@ export async function PUT(
     }
 
     console.log('Blog post updated successfully:', id);
+    
+    // Revalidate blog pages to show updated blog immediately
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath(`/blog/${id}`);
+    revalidatePath('/dashboard');
+
     return NextResponse.json({ 
       success: true,
       message: 'Blog post updated successfully'
@@ -231,6 +239,12 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    // Revalidate blog pages to reflect deleted blog immediately
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath(`/blog/${id}`);
+    revalidatePath('/dashboard');
 
     return NextResponse.json({ success: true });
   } catch (error) {

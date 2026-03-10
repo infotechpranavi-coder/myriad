@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { Banner } from '@/lib/models/banner';
@@ -62,6 +63,10 @@ export async function PUT(
       );
     }
 
+    // Revalidate the home page to show updated banner immediately
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating banner:', error);
@@ -108,6 +113,10 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    // Revalidate the home page to reflect deleted banner immediately
+    revalidatePath('/');
+    revalidatePath('/dashboard');
 
     return NextResponse.json({ success: true });
   } catch (error) {
