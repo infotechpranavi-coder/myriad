@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Room } from '@/lib/models/room';
+import { sortRooms } from '@/lib/utils/room-sort';
 
 interface HeaderProps {
   initialRooms?: Room[];
@@ -45,22 +46,8 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
         if (response.ok) {
           const data = await response.json();
           
-          // Sort rooms by order field (lower numbers first)
-          // Rooms without order will appear last
-          const sortedRooms = [...data].sort((a, b) => {
-            const orderA = a.order ?? 9999; // Default to high number if no order
-            const orderB = b.order ?? 9999;
-            
-            // Primary sort by order
-            if (orderA !== orderB) {
-              return orderA - orderB;
-            }
-            
-            // Secondary sort by name if order is the same
-            const nameA = (a.name || a.title || '').trim();
-            const nameB = (b.name || b.title || '').trim();
-            return nameA.localeCompare(nameB);
-          });
+          // Sort rooms using the utility function (handles order field and default sequence)
+          const sortedRooms = sortRooms(data);
           
           setRooms(sortedRooms);
         }

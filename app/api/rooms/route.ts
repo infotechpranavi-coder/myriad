@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { Room } from '@/lib/models/room';
+import { sortRooms } from '@/lib/utils/room-sort';
 
 const DB_NAME = 'hotel_db';
 const COLLECTION_NAME = 'rooms';
@@ -19,7 +20,10 @@ export async function GET() {
       _id: room._id?.toString() || room._id
     }));
     
-    return NextResponse.json(roomsWithIds, { status: 200 });
+    // Sort rooms using the utility function (handles order field and default sequence)
+    const sortedRooms = sortRooms(roomsWithIds);
+    
+    return NextResponse.json(sortedRooms, { status: 200 });
   } catch (error) {
     console.error('Error fetching rooms:', error);
     return NextResponse.json(

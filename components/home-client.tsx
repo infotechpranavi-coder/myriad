@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Star, MapPin, Wifi, Coffee, Dumbbell } from 'lucide-react';
+import { Star, MapPin, Wifi, Coffee, Dumbbell, Calendar, Clock, User } from 'lucide-react';
 import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
 import {
   Carousel,
@@ -17,7 +17,7 @@ import React from 'react';
 import { Banner } from '@/lib/models/banner';
 import { Room } from '@/lib/models/room';
 import { Restaurant } from '@/lib/models/restaurant';
-import { Testimonial } from '@/lib/models/testimonial';
+import { BlogPost } from '@/lib/models/blog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,10 +28,10 @@ interface HomeClientProps {
   banners: Banner[];
   rooms: Room[];
   restaurants: Restaurant[];
-  testimonials: Testimonial[];
+  blogs: BlogPost[];
 }
 
-export default function HomeClient({ banners, rooms, restaurants, testimonials }: HomeClientProps) {
+export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeClientProps) {
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
   const [inquiryFormData, setInquiryFormData] = useState({
     name: '',
@@ -100,10 +100,14 @@ export default function HomeClient({ banners, rooms, restaurants, testimonials }
     return [];
   });
 
-  // Filter and sort testimonials
-  const activeTestimonials = testimonials
-    .filter((t: Testimonial) => t.isActive)
-    .sort((a: Testimonial, b: Testimonial) => (a.order || 0) - (b.order || 0));
+  // Filter and sort blogs (only published)
+  const publishedBlogs = blogs
+    .filter((b: BlogPost) => b.status === 'published')
+    .sort((a: BlogPost, b: BlogPost) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(a.date).getTime();
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(b.date).getTime();
+      return dateB - dateA; // newest first
+    });
 
   return (
     <main className="bg-background">
@@ -368,59 +372,79 @@ export default function HomeClient({ banners, rooms, restaurants, testimonials }
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Blog Highlights */}
       <section className="py-20 px-4 bg-background">
         <div className="max-w-6xl mx-auto">
           <ScrollAnimationWrapper animation="fadeUp">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-12 text-center text-balance">
-              Guest Testimonials
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4 text-center text-balance">
+              Latest from Our Blog
             </h2>
+            <p className="text-lg text-foreground/70 mb-12 text-center max-w-2xl mx-auto">
+              Insights, stories, and updates from The Myriad Hotel.
+            </p>
           </ScrollAnimationWrapper>
-          {activeTestimonials.length > 0 ? (
-            <Carousel
-              plugins={[plugin.current]}
-              className="w-full"
-              opts={{
-                align: 'start',
-                loop: true,
-              }}
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {activeTestimonials.map((testimonial) => (
-                  <CarouselItem key={testimonial._id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                    <div className="bg-card p-8 rounded-lg border border-border transition-smooth hover:shadow-lg hover:-translate-y-2 h-full">
-                      <div className="flex gap-1 mb-4">
-                        {[...Array(testimonial.rating || 5)].map((_, i) => (
-                          <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                      <p className="text-foreground/80 mb-6 italic">"{testimonial.quote}"</p>
-                      <div className="flex items-center gap-3">
-                        {testimonial.image && (
-                          <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0">
-                            <Image
-                              src={testimonial.image}
-                              alt={testimonial.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
+
+          {publishedBlogs.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {publishedBlogs.slice(0, 3).map((blog, index) => (
+                <ScrollAnimationWrapper key={blog._id || index} animation="fadeUp" delay={index * 100}>
+                  <Link
+                    href={`/blog/${blog._id}`}
+                    className="group block bg-card rounded-lg border border-border overflow-hidden shadow-md hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full"
+                  >
+                    <div className="relative h-52 w-full overflow-hidden bg-muted">
+                      <Image
+                        src={blog.image || blog.images?.[0] || '/hero.jpg'}
+                        alt={blog.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-110"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                    <div className="p-6 flex flex-col h-full">
+                      {blog.category && (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-3">
+                          {blog.category}
+                        </span>
+                      )}
+                      <h3 className="text-xl font-serif font-bold text-primary mb-2 line-clamp-2 group-hover:text-primary/80 transition-colors">
+                        {blog.title}
+                      </h3>
+                      <p className="text-foreground/70 text-sm mb-4 line-clamp-3 flex-1">
+                        {blog.excerpt}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-foreground/60 mt-auto pt-3 border-t border-border">
+                        {blog.author && (
+                          <span className="inline-flex items-center gap-1">
+                            <User size={14} />
+                            {blog.author}
+                          </span>
                         )}
-                        <div>
-                          <p className="font-semibold text-foreground">{testimonial.name}</p>
-                          <p className="text-foreground/60 text-sm">{testimonial.role || 'Guest'}</p>
-                        </div>
+                        {blog.date && (
+                          <span className="inline-flex items-center gap-1">
+                            <Calendar size={14} />
+                            {new Date(blog.date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </span>
+                        )}
+                        {blog.readTime && (
+                          <span className="inline-flex items-center gap-1">
+                            <Clock size={14} />
+                            {blog.readTime}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
+                  </Link>
+                </ScrollAnimationWrapper>
+              ))}
+            </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No testimonials available yet. Check back soon for guest reviews!</p>
+              <p>No blog posts available yet. Check back soon for updates!</p>
             </div>
           )}
         </div>

@@ -2,8 +2,9 @@ import clientPromise from '@/lib/mongodb';
 import { Banner } from '@/lib/models/banner';
 import { Room } from '@/lib/models/room';
 import { Restaurant } from '@/lib/models/restaurant';
-import { Testimonial } from '@/lib/models/testimonial';
+import { BlogPost } from '@/lib/models/blog';
 import HomeClient from '@/components/home-client';
+import { sortRooms } from '@/lib/utils/room-sort';
 
 const DB_NAME = 'hotel_db';
 
@@ -18,8 +19,8 @@ async function getBanners(): Promise<Banner[]> {
       .toArray();
     // Serialize ObjectIds to strings for client component
     return JSON.parse(JSON.stringify(banners));
-    } catch (error) {
-      console.error('Error fetching banners:', error);
+  } catch (error) {
+    console.error('Error fetching banners:', error);
     return [];
   }
 }
@@ -29,35 +30,25 @@ async function getRooms(): Promise<Room[]> {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const rooms = await db.collection<Room>('rooms').find({}).toArray();
-    
+
     // Ensure all rooms have both id and _id for consistency
-    const roomsWithIds = rooms.map(room => ({
+    const roomsWithIds = rooms.map((room) => ({
       ...room,
-      id: room.id || room._id?.toString() || (room._id as any)?.toString?.() || String(room._id),
-      _id: room._id?.toString() || room._id
+      id:
+        room.id ||
+        room._id?.toString() ||
+        (room._id as any)?.toString?.() ||
+        String(room._id),
+      _id: room._id?.toString() || room._id,
     }));
-    
-    // Sort rooms by order field (lower numbers first)
-    // Rooms without order will appear last
-    const sortedRooms = roomsWithIds.sort((a, b) => {
-      const orderA = a.order ?? 9999; // Default to high number if no order
-      const orderB = b.order ?? 9999;
-      
-      // Primary sort by order
-      if (orderA !== orderB) {
-        return orderA - orderB;
-      }
-      
-      // Secondary sort by name if order is the same
-      const nameA = (a.name || a.title || '').trim();
-      const nameB = (b.name || b.title || '').trim();
-      return nameA.localeCompare(nameB);
-    });
-    
+
+    // Sort rooms using the utility function (handles order field and default sequence)
+    const sortedRooms = sortRooms(roomsWithIds);
+
     // Serialize ObjectIds to strings for client component
     return JSON.parse(JSON.stringify(sortedRooms));
-    } catch (error) {
-      console.error('Error fetching rooms:', error);
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
     return [];
   }
 }
@@ -72,36 +63,36 @@ async function getRestaurants(): Promise<Restaurant[]> {
       .toArray();
     // Serialize ObjectIds to strings for client component
     return JSON.parse(JSON.stringify(restaurants));
-    } catch (error) {
-      console.error('Error fetching restaurants:', error);
+  } catch (error) {
+    console.error('Error fetching restaurants:', error);
     return [];
   }
 }
 
-async function getTestimonials(): Promise<Testimonial[]> {
+async function getBlogs(): Promise<BlogPost[]> {
   try {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const testimonials = await db
-      .collection<Testimonial>('testimonials')
+    const blogs = await db
+      .collection<BlogPost>('blog_posts')
       .find({})
-      .sort({ order: 1 })
+      .sort({ createdAt: -1 })
       .toArray();
     // Serialize ObjectIds to strings for client component
-    return JSON.parse(JSON.stringify(testimonials));
-    } catch (error) {
-      console.error('Error fetching testimonials:', error);
+    return JSON.parse(JSON.stringify(blogs));
+  } catch (error) {
+    console.error('Error fetching blogs:', error);
     return [];
   }
 }
 
 export default async function Home() {
   // Fetch all data in parallel for better performance
-  const [banners, rooms, restaurants, testimonials] = await Promise.all([
+  const [banners, rooms, restaurants, blogs] = await Promise.all([
     getBanners(),
     getRooms(),
     getRestaurants(),
-    getTestimonials(),
+    getBlogs(),
   ]);
 
   return (
@@ -109,7 +100,7 @@ export default async function Home() {
       banners={banners}
       rooms={rooms}
       restaurants={restaurants}
-      testimonials={testimonials}
+      blogs={blogs}
     />
   );
 }

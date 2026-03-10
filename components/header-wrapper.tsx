@@ -1,6 +1,7 @@
 import clientPromise from '@/lib/mongodb';
 import { Room } from '@/lib/models/room';
 import Header from './header';
+import { sortRooms } from '@/lib/utils/room-sort';
 
 const DB_NAME = 'hotel_db';
 
@@ -28,22 +29,8 @@ async function getRooms(): Promise<Room[]> {
 export default async function HeaderWrapper() {
   const rooms = await getRooms();
   
-  // Sort rooms by order field (lower numbers first)
-  // Rooms without order will appear last
-  const sortedRooms = [...rooms].sort((a, b) => {
-    const orderA = a.order ?? 9999; // Default to high number if no order
-    const orderB = b.order ?? 9999;
-    
-    // Primary sort by order
-    if (orderA !== orderB) {
-      return orderA - orderB;
-    }
-    
-    // Secondary sort by name if order is the same
-    const nameA = (a.name || a.title || '').trim();
-    const nameB = (b.name || b.title || '').trim();
-    return nameA.localeCompare(nameB);
-  });
+  // Sort rooms using the utility function (handles order field and default sequence)
+  const sortedRooms = sortRooms(rooms);
   
   return <Header initialRooms={sortedRooms} />;
 }
