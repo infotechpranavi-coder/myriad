@@ -171,12 +171,12 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {/* Testimonial Link */}
+            {/* Blog Link */}
             <Link
               href="/blog"
               className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group transition-all duration-300"
             >
-              <span className="relative z-10">Testimonial</span>
+              <span className="relative z-10">Blog</span>
               <span className="absolute inset-0 bg-primary/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-3/4 transition-all duration-300" />
             </Link>
@@ -281,13 +281,13 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
               )}
             </div>
             
-            {/* Mobile Testimonial Link */}
+            {/* Mobile Blog Link */}
             <Link
               href="/blog"
               className="block px-4 py-3 text-foreground/90 font-serif text-sm uppercase tracking-wider hover:bg-primary/5 hover:text-primary transition-all duration-200 border-l-2 border-transparent hover:border-primary"
               onClick={() => setIsMenuOpen(false)}
             >
-              Testimonial
+              Blog
             </Link>
             
             <div className="pt-4 border-t border-primary/10 mt-4">
