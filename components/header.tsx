@@ -121,9 +121,14 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
                     <DropdownMenuItem key={room.id || room._id} asChild>
                       <Link
                         href={`/rooms/${room.id || room._id}`}
-                        className="cursor-pointer font-serif text-sm py-2.5 px-4 hover:bg-primary/5 transition-colors duration-200"
+                        className="cursor-pointer font-serif text-sm py-2.5 px-4 hover:bg-primary/5 transition-colors duration-200 flex items-center justify-between w-full"
                       >
-                        {room.name || room.title}
+                        <span>{room.name || room.title}</span>
+                        {room.soldOut && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-600 text-white ml-2">
+                            Sold Out
+                          </span>
+                        )}
                       </Link>
                     </DropdownMenuItem>
                   ))}
@@ -223,13 +228,18 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
                       <Link
                         key={room.id || room._id}
                         href={`/rooms/${room.id || room._id}`}
-                        className="block px-4 py-2 text-foreground/70 hover:text-primary hover:bg-primary/5 rounded transition-all duration-200 text-sm font-serif"
+                        className="block px-4 py-2 text-foreground/70 hover:text-primary hover:bg-primary/5 rounded transition-all duration-200 text-sm font-serif flex items-center justify-between"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsRoomsMenuOpen(false);
                         }}
                       >
-                        {room.name || room.title}
+                        <span>{room.name || room.title}</span>
+                        {room.soldOut && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-600 text-white ml-2">
+                            Sold Out
+                          </span>
+                        )}
                       </Link>
                     ))}
                   </div>

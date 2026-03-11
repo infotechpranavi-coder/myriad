@@ -249,7 +249,14 @@ export default function RoomDetailPage() {
                             )}
 
                             <div className="flex-1">
-                                <h2 className="font-bold text-lg">{roomName}</h2>
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h2 className="font-bold text-lg">{roomName}</h2>
+                                  {room.soldOut && (
+                                    <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-600 text-white shadow-md">
+                                      Sold Out
+                                    </span>
+                                  )}
+                                </div>
                                 {room.location && (
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <MapPin size={14} />

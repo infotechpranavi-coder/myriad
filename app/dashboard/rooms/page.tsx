@@ -68,6 +68,7 @@ export default function RoomsManagementPage() {
     partialRefundAvailable: false,
     bookingOfferText: '',
     order: '',
+    soldOut: false,
   });
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -228,6 +229,7 @@ export default function RoomsManagementPage() {
       partialRefundAvailable: room.partialRefundAvailable || false,
       bookingOfferText: room.bookingOfferText || '',
       order: room.order?.toString() || '',
+      soldOut: room.soldOut || false,
     });
     setImageUrls(room.gallery || room.images || []);
     // Convert addons to array format
@@ -276,6 +278,7 @@ export default function RoomsManagementPage() {
       partialRefundAvailable: false,
       bookingOfferText: '',
       order: '',
+      soldOut: false,
     });
     setImageUrls([]);
     setNewImageUrl('');
@@ -550,6 +553,7 @@ export default function RoomsManagementPage() {
       partialRefundAvailable: formData.partialRefundAvailable,
       bookingOfferText: formData.bookingOfferText?.trim() || null,
       ...(formData.order?.trim() ? { order: parseInt(formData.order) } : {}),
+      soldOut: formData.soldOut || false,
       // Legacy fields for backward compatibility
       name: formData.title,
       description: formData.about,
@@ -1223,6 +1227,20 @@ export default function RoomsManagementPage() {
                 )}
               </div>
 
+              {/* Sold Out Toggle */}
+              <div className="flex items-center gap-2 p-4 border rounded-lg bg-muted/30">
+                <input
+                  type="checkbox"
+                  id="soldOut"
+                  checked={formData.soldOut}
+                  onChange={(e) => setFormData({ ...formData, soldOut: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="soldOut" className="text-sm font-medium cursor-pointer">
+                  Mark as Sold Out
+                </label>
+              </div>
+
               <Button onClick={handleSave} className="w-full" disabled={saving}>
                 {saving ? (
                   <>
@@ -1480,6 +1498,13 @@ export default function RoomsManagementPage() {
               <CardDescription>{room.description}</CardDescription>
             </CardHeader>
             <CardContent>
+              {room.soldOut && (
+                <div className="mb-3">
+                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-600 text-white shadow-md">
+                    Sold Out
+                  </span>
+                </div>
+              )}
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Price:</span>

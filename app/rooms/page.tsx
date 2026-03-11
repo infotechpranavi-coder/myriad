@@ -88,9 +88,16 @@ export default function RoomsPage() {
                   {/* Content */}
                   <div className={`flex flex-col space-y-10 ${index % 2 === 1 ? 'md:pr-12' : 'md:pl-12'}`}>
                     <div>
-                      <h2 className="text-4xl md:text-6xl font-serif font-bold text-primary mb-6 leading-tight tracking-tight">
-                        {room.name || room.title}
-                      </h2>
+                      <div className="flex items-center gap-3 mb-6">
+                        <h2 className="text-4xl md:text-6xl font-serif font-bold text-primary leading-tight tracking-tight">
+                          {room.name || room.title}
+                        </h2>
+                        {room.soldOut && (
+                          <span className="inline-flex items-center px-5 py-2.5 rounded-full text-base font-bold bg-red-600 text-white shadow-lg whitespace-nowrap">
+                            Sold Out
+                          </span>
+                        )}
+                      </div>
                       <p className="text-lg text-foreground/60 leading-relaxed font-light mb-2">
                         {room.description || room.about}
                       </p>

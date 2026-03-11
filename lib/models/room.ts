@@ -45,6 +45,8 @@ export interface Room {
   bookingOfferText?: string; // e.g., "Book @ ₹0 available"
   // Display order for sorting
   order?: number;
+  // Sold out status
+  soldOut?: boolean;
   // Legacy fields for backward compatibility
   name?: string;
   description?: string;

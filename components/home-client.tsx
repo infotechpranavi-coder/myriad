@@ -236,7 +236,14 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
                           )}
                         </div>
                         <div className="p-6">
-                          <h3 className="text-2xl font-serif font-bold text-primary mb-2">{room.name || room.title}</h3>
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <h3 className="text-2xl font-serif font-bold text-primary">{room.name || room.title}</h3>
+                            {room.soldOut && (
+                              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-600 text-white shadow-md">
+                                Sold Out
+                              </span>
+                            )}
+                          </div>
                           {room.location && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                               <MapPin size={14} />
