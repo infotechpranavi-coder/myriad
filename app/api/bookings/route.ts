@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { syncBookingToBookingjini } from '@/lib/bookingjini';
 import { Booking } from '@/lib/models/booking';
+import { Room } from '@/lib/models/room';
 
 const DB_NAME = 'hotel_db';
-const COLLECTION_NAME = 'bookings';
+const BOOKINGS_COLLECTION = 'bookings';
+const ROOMS_COLLECTION = 'rooms';
 
 // GET all bookings
 export async function GET() {
@@ -11,7 +14,7 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const bookings = await db
-      .collection<Booking>(COLLECTION_NAME)
+      .collection<Booking>(BOOKINGS_COLLECTION)
       .find({})
       .sort({ createdAt: -1 })
       .toArray();
@@ -41,13 +44,46 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db
-      .collection<Booking>(COLLECTION_NAME)
+      .collection<Booking>(BOOKINGS_COLLECTION)
       .insertOne(bookingData);
 
-    return NextResponse.json(
-      { ...bookingData, _id: result.insertedId },
-      { status: 201 }
-    );
+    let bookingjiniRoomTypeId: number | undefined;
+    if (bookingData.roomId) {
+      const room = await db.collection<Room>(ROOMS_COLLECTION).findOne({
+        $or: [{ id: bookingData.roomId }, { _id: bookingData.roomId }],
+      });
+      bookingjiniRoomTypeId = room?.bookingjiniRoomTypeId;
+    }
+
+    const syncResult = await syncBookingToBookingjini(bookingData, {
+      bookingjiniRoomTypeId,
+    });
+
+    const syncUpdates: Partial<Booking> = {
+      updatedAt: new Date(),
+    };
+
+    if (syncResult.success && syncResult.invoiceId) {
+      syncUpdates.bookingjiniInvoiceId = syncResult.invoiceId;
+      syncUpdates.bookingjiniSyncError = undefined;
+    } else if (syncResult.error) {
+      syncUpdates.bookingjiniSyncError = syncResult.error;
+    }
+
+    if (syncResult.success || syncResult.error) {
+      await db.collection<Booking>(BOOKINGS_COLLECTION).updateOne(
+        { _id: result.insertedId },
+        { $set: syncUpdates }
+      );
+    }
+
+    const savedBooking = {
+      ...bookingData,
+      _id: result.insertedId,
+      ...syncUpdates,
+    };
+
+    return NextResponse.json(savedBooking, { status: 201 });
   } catch (error) {
     console.error('Error creating booking:', error);
     return NextResponse.json(

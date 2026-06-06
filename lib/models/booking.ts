@@ -18,6 +18,8 @@ export interface Booking {
   }>;
   totalAmount?: number;
   status?: 'pending' | 'active' | 'confirmed' | 'cancelled';
+  bookingjiniInvoiceId?: number;
+  bookingjiniSyncError?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
