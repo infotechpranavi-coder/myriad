@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { BOOKING_URL } from '@/lib/constants'
 
 interface PricingSidebarProps {
     roomName: string
@@ -76,6 +77,15 @@ export function PricingSidebar({
 
     return (
         <div className="sticky top-24 space-y-4">
+            <a
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-full bg-primary text-primary-foreground py-3 rounded-sm font-bold uppercase tracking-wider hover:bg-primary/95 transition-colors shadow-sm"
+            >
+                Book Now
+            </a>
+
             {/* Booking Form */}
             <div className="bg-background rounded-sm border border-border shadow-sm overflow-hidden">
                 <div className="p-6">

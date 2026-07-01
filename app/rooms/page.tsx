@@ -6,6 +6,7 @@ import { ScrollAnimationWrapper } from '@/components/scroll-animation-wrapper';
 import { Room } from '@/lib/models/room';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { BOOKING_URL } from '@/lib/constants';
 
 const amenityIcons = {
   'Double Bed': <Sofa size={20} />,
@@ -129,12 +130,22 @@ export default function RoomsPage() {
                           </p>
                         </div>
                       </div>
-                      <Link
-                        href={`/rooms/${room.id}`}
-                        className="bg-primary text-primary-foreground px-12 py-5 rounded-none text-sm font-bold hover:bg-primary/95 transition-all duration-500 shadow-[0_10px_30px_-10px_rgba(var(--primary),0.3)] hover:-translate-y-1 uppercase tracking-[0.2em] inline-block"
-                      >
-                        Select Room
-                      </Link>
+                      <div className="flex items-center gap-4">
+                        <a
+                          href={BOOKING_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-primary text-primary-foreground px-12 py-5 rounded-none text-sm font-bold hover:bg-primary/95 transition-all duration-500 shadow-[0_10px_30px_-10px_rgba(var(--primary),0.3)] hover:-translate-y-1 uppercase tracking-[0.2em] inline-block"
+                        >
+                          Book Now
+                        </a>
+                        <Link
+                          href={`/rooms/${room.id}`}
+                          className="border-2 border-primary text-primary px-12 py-5 rounded-none text-sm font-bold hover:bg-primary/5 transition-all duration-500 hover:-translate-y-1 uppercase tracking-[0.2em] inline-block"
+                        >
+                          Select Room
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { BOOKING_URL } from '@/lib/constants';
 
 interface HomeClientProps {
   banners: Banner[];
@@ -205,17 +206,20 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
               plugins={[plugin.current]}
               className="w-full"
             >
-              <CarouselContent className="-ml-2 md:-ml-4">
+              <CarouselContent className="-ml-2 md:-ml-4 items-stretch">
                 {rooms.map((room, index) => {
                   // Get room images - check gallery first, then images (matching room detail page)
                   const roomImages = room.gallery || room.images || [];
                   const roomImage = roomImages.length > 0 ? roomImages[0] : null;
+                  const displayAmenities = room.amenities && room.amenities.length > 0
+                    ? room.amenities.slice(0, 3)
+                    : ['High-speed WiFi', 'Premium Toiletries', 'City View Balcony'];
                   
                   return (
-                  <CarouselItem key={room.id || room._id || index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                    <ScrollAnimationWrapper animation="scaleIn" delay={index * 100}>
-                      <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full">
-                        <div className="relative h-64 overflow-hidden bg-muted">
+                  <CarouselItem key={room.id || room._id || index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3 h-auto">
+                    <ScrollAnimationWrapper animation="scaleIn" delay={index * 100} className="h-full">
+                      <div className="bg-card rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-smooth hover:-translate-y-2 h-full flex flex-col">
+                        <div className="relative h-64 shrink-0 overflow-hidden bg-muted">
                           {roomImage ? (
                             <Image
                               src={roomImage}
@@ -235,56 +239,58 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
                             </div>
                           )}
                         </div>
-                        <div className="p-6">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <h3 className="text-2xl font-serif font-bold text-primary">{room.name || room.title}</h3>
+                        <div className="p-6 flex flex-col flex-1">
+                          <div className="flex items-start gap-2 mb-2 min-h-[3.5rem]">
+                            <h3 className="text-2xl font-serif font-bold text-primary line-clamp-2">{room.name || room.title}</h3>
                             {room.soldOut && (
-                              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-600 text-white shadow-md">
+                              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-600 text-white shadow-md shrink-0">
                                 Sold Out
                               </span>
                             )}
                           </div>
-                          {room.location && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                              <MapPin size={14} />
-                              {room.location}
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3 min-h-[1.25rem]">
+                            {room.location ? (
+                              <>
+                                <MapPin size={14} className="shrink-0" />
+                                <span className="line-clamp-1">{room.location}</span>
+                              </>
+                            ) : (
+                              <span className="invisible">Location</span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-1 mb-4">
                             {[...Array(5)].map((_, i) => (
                               <Star key={i} size={16} className="fill-accent text-accent" />
                             ))}
                           </div>
-                          <ul className="space-y-2 mb-6 text-foreground/70">
-                            {room.amenities && room.amenities.slice(0, 3).map((amenity, i) => (
+                          <ul className="space-y-2 mb-6 text-foreground/70 flex-1 min-h-[5.5rem]">
+                            {displayAmenities.map((amenity, i) => (
                               <li key={i} className="flex items-center gap-2">
-                                <Wifi size={16} /> {amenity}
+                                <Wifi size={16} className="shrink-0" />
+                                <span className="line-clamp-1">{amenity}</span>
                               </li>
                             ))}
-                            {(!room.amenities || room.amenities.length === 0) && (
-                              <>
-                                <li className="flex items-center gap-2">
-                                  <Wifi size={16} /> High-speed WiFi
-                                </li>
-                                <li className="flex items-center gap-2">
-                                  <Coffee size={16} /> Premium Toiletries
-                                </li>
-                                <li className="flex items-center gap-2">
-                                  <Dumbbell size={16} /> City View Balcony
-                                </li>
-                              </>
-                            )}
                           </ul>
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-center gap-2 flex-wrap mt-auto pt-4 border-t border-border/40">
                             <span className="text-2xl font-bold text-primary">
                               ₹{(room.price || room.priceSummary?.basePrice || 0).toLocaleString()}
                             </span>
-                            <Link
-                              href={`/rooms/${room.id || room._id}`}
-                              className="bg-primary text-primary-foreground px-6 py-2 rounded transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
-                            >
-                              View Details
-                            </Link>
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={BOOKING_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-primary text-primary-foreground px-4 py-2 rounded text-sm transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
+                              >
+                                Book Now
+                              </a>
+                              <Link
+                                href={`/rooms/${room.id || room._id}`}
+                                className="border border-primary text-primary px-4 py-2 rounded text-sm transition-smooth hover:shadow-lg hover:-translate-y-1 active:scale-95"
+                              >
+                                View Details
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>

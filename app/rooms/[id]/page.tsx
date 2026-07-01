@@ -52,6 +52,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { BOOKING_URL } from '@/lib/constants';
 
 const amenityIcons: Record<string, React.ReactNode> = {
     'Double Bed': <Sofa size={18} />,
@@ -223,10 +224,20 @@ export default function RoomDetailPage() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-1 text-yellow-500">
-                        {[...Array(3)].map((_, i) => (
-                            <Star key={i} size={14} fill="currentColor" />
-                        ))}
+                    <div className="flex items-center gap-3">
+                        <a
+                            href={BOOKING_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-primary text-primary-foreground px-5 py-2 rounded text-sm font-semibold uppercase tracking-wider hover:bg-primary/95 transition-colors"
+                        >
+                            Book Now
+                        </a>
+                        <div className="flex items-center gap-1 text-yellow-500">
+                            {[...Array(3)].map((_, i) => (
+                                <Star key={i} size={14} fill="currentColor" />
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

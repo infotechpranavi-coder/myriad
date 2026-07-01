@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Room } from '@/lib/models/room';
 import { sortRooms } from '@/lib/utils/room-sort';
+import { BOOKING_URL } from '@/lib/constants';
 
 interface HeaderProps {
   initialRooms?: Room[];
@@ -174,14 +175,22 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
             </Link>
           </div>
 
-          {/* Call Now Button and Mobile Menu Toggle */}
-          <div className="flex items-center gap-3">
+          {/* Book Now, Call Now Button and Mobile Menu Toggle */}
+          <div className="flex items-center gap-3 md:-mr-8">
+            <a
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center whitespace-nowrap bg-primary text-primary-foreground px-4 py-1.5 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md hover:bg-primary/95 transition-all duration-300"
+            >
+              Book Now
+            </a>
             <a 
               href="tel:9619618000"
-              className="hidden sm:inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg hover:bg-primary/95 transition-all duration-300"
+              className="hidden lg:inline-flex items-center gap-1.5 whitespace-nowrap bg-primary text-primary-foreground px-4 py-1.5 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md hover:bg-primary/95 transition-all duration-300"
             >
               <span>Call Now :</span>
-              <span className="font-mono font-semibold text-base">961 961 8000</span>
+              <span className="font-mono font-semibold text-sm">961 961 8000</span>
             </a>
             
             {/* Mobile Menu Button */}
@@ -287,13 +296,22 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
               Blog
             </Link>
             
-            <div className="pt-4 border-t border-primary/10 mt-4">
+            <div className="pt-4 border-t border-primary/10 mt-4 space-y-3">
+              <a
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-full bg-primary text-primary-foreground px-6 py-2 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md transition-all duration-300"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Book Now
+              </a>
               <a 
                 href="tel:9619618000"
-                className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground px-8 py-3 font-serif text-sm uppercase tracking-wider border-2 border-primary shadow-md hover:shadow-lg transition-all duration-300"
+                className="flex items-center justify-center gap-1.5 w-full bg-primary text-primary-foreground px-6 py-2 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md transition-all duration-300"
               >
                 <span>Call Now :</span>
-                <span className="font-mono font-semibold text-base">961 961 8000</span>
+                <span className="font-mono font-semibold text-sm">961 961 8000</span>
               </a>
             </div>
           </div>
