@@ -215,7 +215,7 @@ export default function RoomDetailPage() {
     return (
         <main className="min-h-screen bg-muted/20">
             {/* Top Header */}
-            <div className="sticky top-0 z-50 bg-background border-b">
+            <div className="bg-background border-b">
                 <div className="max-w-7xl mx-auto flex items-center gap-4 px-4 py-4">
                     <div className="flex-1">
                         <h1 className="text-lg font-bold">The Myriad Business Hotel</h1>
@@ -506,7 +506,7 @@ export default function RoomDetailPage() {
                 </div>
 
                 {/* RIGHT COLUMN – STICKY PRICE SUMMARY */}
-                <div className="sticky top-24 h-fit">
+                <div className="sticky top-20 md:top-24 h-fit">
                     <PricingSidebar
                         roomName={roomName}
                         price={basePrice}

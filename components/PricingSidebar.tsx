@@ -76,7 +76,7 @@ export function PricingSidebar({
     const total = price + totalTaxesAndFees + selectedAddonsTotal;
 
     return (
-        <div className="sticky top-24 space-y-4">
+        <div className="sticky top-20 md:top-24 space-y-4">
             <a
                 href={BOOKING_URL}
                 target="_blank"

@@ -74,28 +74,29 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
   return (
     <header className={`sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-2 border-primary/20 transition-all duration-300 ${hasScrolled ? 'shadow-lg shadow-primary/5' : 'shadow-sm'}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center md:justify-between items-center min-h-18 md:min-h-20 py-2 relative">
+        <div className="flex justify-between items-center gap-3 min-h-16 md:min-h-20 py-2">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity duration-300 md:-ml-12">
-            <div className="p-2">
+          <Link href="/" className="flex items-center shrink-0 hover:opacity-90 transition-opacity duration-300">
+            <div className="p-1 md:p-2">
               <Image
                 src="/Rose Day ka plan tha.png"
                 alt="The Myriad Hotel"
                 width={200}
                 height={70}
-                className="h-16 md:h-20 w-auto object-contain"
+                className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
                 priority
               />
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item, index) => (
+          {/* Desktop Navigation + Action Buttons */}
+          <div className="hidden md:flex items-center gap-4 lg:gap-6 flex-1 justify-end min-w-0">
+            <div className="flex items-center gap-0 lg:gap-1 overflow-hidden">
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group transition-all duration-300"
+                className="relative shrink-0 px-2 lg:px-3 xl:px-4 py-2 text-foreground/90 font-serif text-xs lg:text-sm uppercase tracking-wider group transition-all duration-300 whitespace-nowrap"
               >
                 <span className="relative z-10">{item.label}</span>
                 <span className="absolute inset-0 bg-primary/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
@@ -107,7 +108,7 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
             {rooms.length > 0 && (
               <DropdownMenu onOpenChange={setIsRoomsMenuOpen}>
                 <DropdownMenuTrigger
-                  className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group flex items-center gap-1 outline-none transition-all duration-300"
+                  className="relative px-2 lg:px-3 xl:px-4 py-2 text-foreground/90 font-serif text-xs lg:text-sm uppercase tracking-wider group flex items-center gap-1 outline-none transition-all duration-300 whitespace-nowrap"
                 >
                   <span className="relative z-10">Rooms</span>
                   <ChevronDown 
@@ -140,7 +141,7 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
             {/* Restaurants Dropdown */}
             <DropdownMenu onOpenChange={setIsRestaurantMenuOpen}>
               <DropdownMenuTrigger
-                className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group flex items-center gap-1 outline-none transition-all duration-300"
+                className="relative px-2 lg:px-3 xl:px-4 py-2 text-foreground/90 font-serif text-xs lg:text-sm uppercase tracking-wider group flex items-center gap-1 outline-none transition-all duration-300 whitespace-nowrap"
               >
                 <span className="relative z-10">Restaurants</span>
                 <ChevronDown 
@@ -167,36 +168,38 @@ export default function Header({ initialRooms = [] }: HeaderProps) {
             {/* Blog Link */}
             <Link
               href="/blog"
-              className="relative px-4 py-2 text-foreground/90 font-serif text-sm uppercase tracking-wider group transition-all duration-300"
+              className="relative shrink-0 hidden lg:inline-flex px-2 lg:px-3 xl:px-4 py-2 text-foreground/90 font-serif text-xs lg:text-sm uppercase tracking-wider group transition-all duration-300 whitespace-nowrap"
             >
               <span className="relative z-10">Blog</span>
               <span className="absolute inset-0 bg-primary/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-3/4 transition-all duration-300" />
             </Link>
+            </div>
+
+            <div className="relative z-20 flex items-center gap-2 shrink-0 bg-background border-l border-primary/15 pl-4 ml-1">
+              <a
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-20 inline-flex items-center whitespace-nowrap bg-primary text-primary-foreground px-3 lg:px-4 py-1.5 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md hover:bg-primary/95 transition-all duration-300"
+              >
+                Book Now
+              </a>
+              <a 
+                href="tel:9619618000"
+                className="hidden xl:inline-flex items-center gap-1.5 whitespace-nowrap bg-primary text-primary-foreground px-3 lg:px-4 py-1.5 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md hover:bg-primary/95 transition-all duration-300"
+              >
+                <span>Call Now :</span>
+                <span className="font-mono font-semibold text-sm">961 961 8000</span>
+              </a>
+            </div>
           </div>
 
-          {/* Book Now, Call Now Button and Mobile Menu Toggle */}
-          <div className="flex items-center gap-3 md:-mr-8">
-            <a
-              href={BOOKING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center whitespace-nowrap bg-primary text-primary-foreground px-4 py-1.5 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md hover:bg-primary/95 transition-all duration-300"
-            >
-              Book Now
-            </a>
-            <a 
-              href="tel:9619618000"
-              className="hidden lg:inline-flex items-center gap-1.5 whitespace-nowrap bg-primary text-primary-foreground px-4 py-1.5 font-serif text-xs uppercase tracking-wider border border-primary shadow-sm hover:shadow-md hover:bg-primary/95 transition-all duration-300"
-            >
-              <span>Call Now :</span>
-              <span className="font-mono font-semibold text-sm">961 961 8000</span>
-            </a>
-            
-            {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle */}
+          <div className="flex items-center gap-2 md:hidden shrink-0">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="absolute right-0 md:relative md:right-auto md:hidden p-2 text-foreground/90 hover:text-foreground transition-colors"
+              className="p-2 text-foreground/90 hover:text-foreground transition-colors"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
