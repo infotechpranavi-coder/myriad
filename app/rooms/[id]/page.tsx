@@ -53,6 +53,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { BOOKING_URL } from '@/lib/constants';
+import { getRoomDisplayPrice } from '@/lib/utils/room-price';
 
 const amenityIcons: Record<string, React.ReactNode> = {
     'Double Bed': <Sofa size={18} />,
@@ -176,8 +177,10 @@ export default function RoomDetailPage() {
         );
     }
 
-    // Base price for 24 hours (stored in database - this is the 24-hour rate)
-    const pricePer24Hours = room.priceSummary?.basePrice || room.price || 0;
+    // Base price for 24 hours (uses today's price when enabled)
+    const { effectivePrice, originalPrice, showTodayPriceTag } = getRoomDisplayPrice(room);
+    const pricePer24Hours = effectivePrice;
+    const originalPricePer24Hours = originalPrice ?? undefined;
     const taxes = room.priceSummary?.taxes || 0;
     const serviceFees = room.priceSummary?.serviceFees || 0;
     const roomImages = room.gallery || room.images || [];
@@ -248,19 +251,20 @@ export default function RoomDetailPage() {
                 <div className="space-y-6">
                     {/* PROPERTY INFO */}
                     <div className="bg-background rounded-lg border p-6">
-                        <div className="flex gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex gap-4 flex-1 min-w-0">
                             {roomImages[0] && (
                                 <Image
                                     src={roomImages[0]}
                                     alt={roomName}
                                     width={120}
                                     height={120}
-                                    className="rounded-md object-cover"
+                                    className="rounded-md object-cover shrink-0"
                                 />
                             )}
 
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3 mb-2 flex-wrap">
                                   <h2 className="font-bold text-lg">{roomName}</h2>
                                   {room.soldOut && (
                                     <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-600 text-white shadow-md">
@@ -270,8 +274,8 @@ export default function RoomDetailPage() {
                                 </div>
                                 {room.location && (
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <MapPin size={14} />
-                                        {room.location}
+                                    <MapPin size={14} className="shrink-0" />
+                                        <span className="line-clamp-2">{room.location}</span>
                                 </div>
                                 )}
 
@@ -284,9 +288,30 @@ export default function RoomDetailPage() {
                                     </span>
                                 </div>
                             </div>
+                            </div>
+
+                            <div className="sm:text-right shrink-0 sm:ml-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                                <p className="text-xs text-muted-foreground mb-1">Room Price</p>
+                                {showTodayPriceTag && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 mb-1.5">
+                                        Today&apos;s Price
+                                    </span>
+                                )}
+                                <div className="flex sm:flex-col items-baseline sm:items-end gap-2">
+                                    {originalPrice && (
+                                        <span className="text-base text-muted-foreground line-through">
+                                            ₹{originalPrice.toLocaleString()}
+                                        </span>
+                                    )}
+                                    <span className="text-2xl font-bold text-primary">
+                                        ₹{effectivePrice.toLocaleString()}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">per 24 hours</p>
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-4 mt-6 border-t pt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 border-t pt-4">
                             <div>
                                 <p className="text-xs text-muted-foreground">Check-in</p>
                                 <p className="font-semibold">
@@ -613,6 +638,8 @@ export default function RoomDetailPage() {
                             }
                         }}
                         submitting={submitting}
+                        originalPricePer24Hours={originalPricePer24Hours}
+                        showTodayPriceTag={showTodayPriceTag}
                     />
                 </div>
             </div>

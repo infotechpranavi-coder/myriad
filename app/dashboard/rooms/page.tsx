@@ -26,7 +26,9 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { getRoomDisplayPrice } from '@/lib/utils/room-price';
 import {
   Select,
   SelectContent,
@@ -69,6 +71,8 @@ export default function RoomsManagementPage() {
     bookingOfferText: '',
     order: '',
     soldOut: false,
+    todayPriceEnabled: false,
+    todayPrice: '',
   });
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -215,7 +219,6 @@ export default function RoomsManagementPage() {
       about: room.about || room.description || '',
       amenities: room.amenities.join(', '),
       location: room.location || '',
-      basePrice: room.priceSummary?.basePrice?.toString() || room.price?.toString() || '',
       taxes: room.priceSummary?.taxes?.toString() || '',
       serviceFees: room.priceSummary?.serviceFees?.toString() || '',
       addons: '', // No longer used
@@ -230,9 +233,13 @@ export default function RoomsManagementPage() {
       bookingOfferText: room.bookingOfferText || '',
       order: room.order?.toString() || '',
       soldOut: room.soldOut || false,
+      todayPriceEnabled: room.todayPriceEnabled || false,
+      todayPrice: room.todayPrice?.toString() || '',
+      basePrice: room.todayPriceEnabled
+        ? room.oldPrice?.toString() || ''
+        : room.priceSummary?.basePrice?.toString() || room.price?.toString() || '',
     });
     setImageUrls(room.gallery || room.images || []);
-    // Convert addons to array format
     if (room.addons && room.addons.length > 0) {
       setAddons(room.addons.map((addon) => ({
         name: addon.name,
@@ -279,6 +286,8 @@ export default function RoomsManagementPage() {
       bookingOfferText: '',
       order: '',
       soldOut: false,
+      todayPriceEnabled: false,
+      todayPrice: '',
     });
     setImageUrls([]);
     setNewImageUrl('');
@@ -518,10 +527,13 @@ export default function RoomsManagementPage() {
         }
       }
 
-      const basePrice = formData.basePrice ? parseFloat(formData.basePrice) : 0;
+      const normalPrice = formData.basePrice ? parseFloat(formData.basePrice) : 0;
+      const todayPrice = formData.todayPrice ? parseFloat(formData.todayPrice) : 0;
       const taxes = formData.taxes ? parseFloat(formData.taxes) : 0;
       const serviceFees = formData.serviceFees ? parseFloat(formData.serviceFees) : 0;
-      const totalAmount = basePrice + taxes + serviceFees;
+      const effectiveBasePrice =
+        formData.todayPriceEnabled && todayPrice > 0 ? todayPrice : normalPrice;
+      const totalAmount = effectiveBasePrice + taxes + serviceFees;
 
     // Prepare room data, preserving existing id when editing
     const roomData: any = {
@@ -536,11 +548,17 @@ export default function RoomsManagementPage() {
       location: formData.location || undefined,
       gallery: imageUrls.filter(Boolean),
       priceSummary: {
-        basePrice,
+        basePrice: effectiveBasePrice,
         taxes: taxes || undefined,
         serviceFees: serviceFees || undefined,
         totalAmount,
       },
+      todayPriceEnabled: formData.todayPriceEnabled,
+      todayPrice: formData.todayPriceEnabled && todayPrice > 0 ? todayPrice : null,
+      oldPrice:
+        formData.todayPriceEnabled && todayPrice > 0 && normalPrice > 0
+          ? normalPrice
+          : null,
       addons: addonsData,
       goibiboOffers: goibiboOffersData,
       // Room booking display fields - use null for empty strings to allow clearing fields
@@ -557,7 +575,7 @@ export default function RoomsManagementPage() {
       // Legacy fields for backward compatibility
       name: formData.title,
       description: formData.about,
-      price: basePrice,
+      price: effectiveBasePrice,
       capacity: formData.guests,
     };
 
@@ -1051,15 +1069,55 @@ export default function RoomsManagementPage() {
               <div className="border-t pt-4">
                 <h3 className="text-sm font-semibold mb-3">Price Summary</h3>
                 <div className="space-y-3">
+                  <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/20">
+                    <div>
+                      <label className="text-sm font-medium">Today&apos;s Price</label>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Show a special today price with the normal price crossed out
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.todayPriceEnabled}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, todayPriceEnabled: checked })
+                      }
+                    />
+                  </div>
+
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Price (₹)</label>
+                    <label className="text-sm font-medium mb-2 block">
+                      {formData.todayPriceEnabled ? 'Normal Price (₹)' : 'Price (₹)'}
+                    </label>
                     <Input
                       type="number"
                       value={formData.basePrice}
                       onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
-                      placeholder="4230"
+                      placeholder="4500"
                     />
+                    {formData.todayPriceEnabled && formData.basePrice && (
+                      <p className="text-xs text-muted-foreground mt-1 line-through">
+                        Will show as crossed: ₹{parseFloat(formData.basePrice || '0').toLocaleString()}
+                      </p>
+                    )}
                   </div>
+
+                  {formData.todayPriceEnabled && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        Today&apos;s Price (₹)
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                          Today&apos;s Price
+                        </span>
+                      </label>
+                      <Input
+                        type="number"
+                        value={formData.todayPrice}
+                        onChange={(e) => setFormData({ ...formData, todayPrice: e.target.value })}
+                        placeholder="3999"
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <label className="text-sm font-medium mb-2 block">Taxes & Service Fees (₹)</label>
                     <div className="grid grid-cols-2 gap-2">
@@ -1082,7 +1140,11 @@ export default function RoomsManagementPage() {
                       <span className="text-sm font-medium">Total Amount to be paid:</span>
                       <span className="text-lg font-bold">
                         ₹{(
-                          (formData.basePrice ? parseFloat(formData.basePrice) : 0) +
+                          (formData.todayPriceEnabled && formData.todayPrice
+                            ? parseFloat(formData.todayPrice)
+                            : formData.basePrice
+                              ? parseFloat(formData.basePrice)
+                              : 0) +
                           (formData.taxes ? parseFloat(formData.taxes) : 0) +
                           (formData.serviceFees ? parseFloat(formData.serviceFees) : 0)
                         ).toFixed(2)}
@@ -1491,7 +1553,10 @@ export default function RoomsManagementPage() {
       </Dialog>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {rooms.map((room) => (
+        {rooms.map((room) => {
+          const { effectivePrice, originalPrice, showTodayPriceTag } = getRoomDisplayPrice(room);
+
+          return (
           <Card key={room.id}>
             <CardHeader>
               <CardTitle>{room.name}</CardTitle>
@@ -1506,16 +1571,22 @@ export default function RoomsManagementPage() {
                 </div>
               )}
               <div className="space-y-2 mb-4">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Price:</span>
-                  <span className="font-semibold">₹{room.price}</span>
-                </div>
-                {room.oldPrice && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Old Price:</span>
-                    <span className="text-sm line-through">₹{room.oldPrice}</span>
+                  <div className="text-right">
+                    {showTodayPriceTag && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-green-100 text-green-700 mb-1">
+                        Today&apos;s Price
+                      </span>
+                    )}
+                    <div className="flex items-baseline gap-2 justify-end">
+                      {originalPrice && (
+                        <span className="text-sm line-through text-muted-foreground">₹{originalPrice}</span>
+                      )}
+                      <span className="font-semibold">₹{effectivePrice}</span>
+                    </div>
                   </div>
-                )}
+                </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Capacity:</span>
                   <span className="text-sm">{room.capacity}</span>
@@ -1547,7 +1618,8 @@ export default function RoomsManagementPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

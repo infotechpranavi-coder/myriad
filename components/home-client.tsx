@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { BOOKING_URL } from '@/lib/constants';
+import { getRoomDisplayPrice } from '@/lib/utils/room-price';
 
 interface HomeClientProps {
   banners: Banner[];
@@ -214,6 +215,7 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
                   const displayAmenities = room.amenities && room.amenities.length > 0
                     ? room.amenities.slice(0, 3)
                     : ['High-speed WiFi', 'Premium Toiletries', 'City View Balcony'];
+                  const { effectivePrice, originalPrice, showTodayPriceTag } = getRoomDisplayPrice(room);
                   
                   return (
                   <CarouselItem key={room.id || room._id || index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3 h-auto">
@@ -271,10 +273,24 @@ export default function HomeClient({ banners, rooms, restaurants, blogs }: HomeC
                               </li>
                             ))}
                           </ul>
-                          <div className="flex justify-between items-center gap-2 flex-wrap mt-auto pt-4 border-t border-border/40">
-                            <span className="text-2xl font-bold text-primary">
-                              ₹{(room.price || room.priceSummary?.basePrice || 0).toLocaleString()}
-                            </span>
+                          <div className="flex justify-between items-end gap-2 flex-wrap mt-auto pt-4 border-t border-border/40">
+                            <div className="flex flex-col gap-1">
+                              {showTodayPriceTag && (
+                                <span className="inline-flex w-fit items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                  Today&apos;s Price
+                                </span>
+                              )}
+                              <div className="flex items-baseline gap-2">
+                                {originalPrice && (
+                                  <span className="text-lg text-foreground/40 line-through">
+                                    ₹{originalPrice.toLocaleString()}
+                                  </span>
+                                )}
+                                <span className="text-2xl font-bold text-primary">
+                                  ₹{effectivePrice.toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
                             <div className="flex items-center gap-2">
                               <a
                                 href={BOOKING_URL}

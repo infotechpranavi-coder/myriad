@@ -45,6 +45,8 @@ interface PricingSidebarProps {
     onDateRangeChange?: (dates: { from: Date | undefined; to: Date | undefined }) => void
     onSubmit?: (e: React.FormEvent) => void
     submitting?: boolean
+    originalPricePer24Hours?: number
+    showTodayPriceTag?: boolean
 }
 
 export function PricingSidebar({ 
@@ -64,7 +66,9 @@ export function PricingSidebar({
     dateRange,
     onDateRangeChange,
     onSubmit,
-    submitting = false
+    submitting = false,
+    originalPricePer24Hours,
+    showTodayPriceTag = false,
 }: PricingSidebarProps) {
     const totalTaxesAndFees = taxes + serviceFees;
     
@@ -232,6 +236,11 @@ export function PricingSidebar({
 
                         {/* Price Display */}
                         <div className="pt-4 border-t border-border">
+                            {showTodayPriceTag && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 mb-2">
+                                    Today&apos;s Price
+                                </span>
+                            )}
                             <div className="space-y-2">
                                 <div className="flex items-baseline justify-between">
                                     <span className="text-sm font-semibold text-foreground/80">
@@ -242,9 +251,16 @@ export function PricingSidebar({
                                     </span>
                                 </div>
                                 {pricePer24Hours && nights !== undefined && nights > 0 ? (
-                                    <p className="text-xs text-foreground/50">
-                                        (₹{pricePer24Hours.toLocaleString()}/24hrs × {nights} {nights === 1 ? 'night' : 'nights'})
-                                    </p>
+                                    <div className="space-y-1">
+                                        {originalPricePer24Hours ? (
+                                            <p className="text-xs text-foreground/40 line-through">
+                                                ₹{originalPricePer24Hours.toLocaleString()}/24hrs × {nights} {nights === 1 ? 'night' : 'nights'}
+                                            </p>
+                                        ) : null}
+                                        <p className="text-xs text-foreground/50">
+                                            (₹{pricePer24Hours.toLocaleString()}/24hrs × {nights} {nights === 1 ? 'night' : 'nights'})
+                                        </p>
+                                    </div>
                                 ) : null}
                                 {selectedAddonsTotal > 0 && (
                                     <div className="flex items-baseline justify-between pt-2">

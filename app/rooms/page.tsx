@@ -7,6 +7,7 @@ import { Room } from '@/lib/models/room';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BOOKING_URL } from '@/lib/constants';
+import { getRoomDisplayPrice } from '@/lib/utils/room-price';
 
 const amenityIcons = {
   'Double Bed': <Sofa size={20} />,
@@ -68,7 +69,10 @@ export default function RoomsPage() {
     <main className="bg-background">
       {/* Rooms Sections */}
       <section className="bg-background">
-        {rooms.map((room, index) => (
+        {rooms.map((room, index) => {
+          const { effectivePrice, originalPrice, showTodayPriceTag } = getRoomDisplayPrice(room);
+
+          return (
           <div key={room.id} id={`room-${room.id}`} className={`${index % 2 === 1 ? 'bg-muted/10' : ''} py-28 px-4`}>
             <div className="max-w-7xl mx-auto">
               <ScrollAnimationWrapper animation="fadeUp">
@@ -121,12 +125,17 @@ export default function RoomsPage() {
                     <div className="flex items-center justify-between pt-10 border-t border-border mt-6">
                       <div>
                         <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em] mb-2 font-bold">Starting from</p>
+                        {showTodayPriceTag && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 mb-2">
+                            Today&apos;s Price
+                          </span>
+                        )}
                         <div className="flex items-baseline gap-3">
-                          {room.oldPrice && (
-                            <span className="text-lg text-foreground/30 line-through decoration-1">₹{room.oldPrice.toLocaleString()}</span>
+                          {originalPrice && (
+                            <span className="text-lg text-foreground/30 line-through decoration-1">₹{originalPrice.toLocaleString()}</span>
                           )}
                           <p className="text-5xl font-serif font-bold text-primary italic">
-                            ₹{(room.price || room.priceSummary?.basePrice || 0).toLocaleString()}
+                            ₹{effectivePrice.toLocaleString()}
                           </p>
                         </div>
                       </div>
@@ -152,7 +161,8 @@ export default function RoomsPage() {
               </ScrollAnimationWrapper>
             </div>
           </div>
-        ))}
+          );
+        })}
       </section>
 
       {/* Property Amenities Section */}

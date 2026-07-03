@@ -47,6 +47,9 @@ export interface Room {
   order?: number;
   // Sold out status
   soldOut?: boolean;
+  // Today's promotional price
+  todayPriceEnabled?: boolean;
+  todayPrice?: number;
   // Bookingjini / Pripgo room type mapping
   bookingjiniRoomTypeId?: number;
   // Legacy fields for backward compatibility
